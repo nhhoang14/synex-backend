@@ -3,6 +3,7 @@ package com.nhhoang.synexbackend.controller;
 import com.nhhoang.synexbackend.model.Brand;
 import com.nhhoang.synexbackend.repository.BrandRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -21,6 +22,7 @@ public class BrandController {
     }
 
     @PostMapping
+    @PreAuthorize("hasRole('ADMIN')")
     public Brand create(@RequestBody Brand brand) {
         return brandRepository.save(brand);
     }

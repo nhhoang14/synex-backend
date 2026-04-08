@@ -1,8 +1,11 @@
 package com.nhhoang.synexbackend.controller;
 
-import com.nhhoang.synexbackend.model.User;
+import com.nhhoang.synexbackend.dto.UpdateUserRequest;
+import com.nhhoang.synexbackend.dto.UserDTO;
 import com.nhhoang.synexbackend.service.UserService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -13,14 +16,24 @@ public class UserController {
 
     private final UserService userService;
 
-    @PostMapping("/register")
-    public User register(@RequestBody User user){
-        return userService.register(user);
+    @GetMapping("/me")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<UserDTO> getCurrentUser() {
+        UserDTO user = userService.getCurrentUserProfile();
+        return ResponseEntity.ok(user);
+    }
+
+    @PutMapping("/me")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<UserDTO> updateProfile(@RequestBody UpdateUserRequest request) {
+        UserDTO user = userService.updateUserProfile(request);
+        return ResponseEntity.ok(user);
     }
 
     @DeleteMapping("/{id}")
-    public String deleteUser(@PathVariable Long id){
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<String> deleteUser(@PathVariable Long id) {
         userService.deleteUser(id);
-        return "User deleted";
+        return ResponseEntity.ok("User deleted successfully");
     }
 }

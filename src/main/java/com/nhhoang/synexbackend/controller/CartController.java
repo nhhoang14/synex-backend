@@ -4,6 +4,7 @@ import com.nhhoang.synexbackend.model.Cart;
 import com.nhhoang.synexbackend.model.CartItem;
 import com.nhhoang.synexbackend.service.CartService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -15,6 +16,7 @@ public class CartController {
     private final CartService cartService;
 
     @PostMapping("/add")
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     public CartItem addToCart(@RequestParam Long cartId,
                               @RequestParam Long productId,
                               @RequestParam int quantity) {
@@ -23,11 +25,13 @@ public class CartController {
     }
 
     @PostMapping
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     public Cart createCart() {
         return cartService.createCart();
     }
 
     @GetMapping("/{cartId}")
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     public Cart getCart(@PathVariable Long cartId) {
         return cartService.getCart(cartId);
     }
