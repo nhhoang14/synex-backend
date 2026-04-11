@@ -7,12 +7,15 @@ import com.nhhoang.synexbackend.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
 @Service
 @RequiredArgsConstructor
 public class ShippingAddressService {
+
+    private static final int MAX_ADDRESSES_PER_USER = 3;
 
     private final ShippingAddressRepository shippingAddressRepository;
     private final UserRepository userRepository;
@@ -23,21 +26,33 @@ public class ShippingAddressService {
                 .orElseThrow(() -> new RuntimeException("User not found"));
     }
 
+    @Transactional
     public ShippingAddress addAddressForCurrentUser(ShippingAddress address) {
         User user = getCurrentUser();
-        address.setUser(user);
+        long currentAddressCount = shippingAddressRepository.countByUserId(user.getId());
+        if (currentAddressCount >= MAX_ADDRESSES_PER_USER) {
+            throw new IllegalArgumentException("Each account can only have up to 3 shipping addresses");
+        }
 
-        // Nếu đặt là default, thì các địa chỉ khác không phải default
-        if (address.isDefault()) {
-            shippingAddressRepository.findByUserId(user.getId()).forEach(addr -> {
+        address.setUser(user);
+        List<ShippingAddress> existingAddresses = shippingAddressRepository.findByUserId(user.getId());
+
+        // First address is always default. Otherwise only keep one default.
+        if (existingAddresses.isEmpty()) {
+            address.setDefault(true);
+        } else if (address.isDefault()) {
+            existingAddresses.forEach(addr -> {
                 addr.setDefault(false);
                 shippingAddressRepository.save(addr);
             });
+        } else {
+            address.setDefault(false);
         }
 
         return shippingAddressRepository.save(address);
     }
 
+    @Transactional
     public ShippingAddress updateAddress(Long addressId, ShippingAddress updatedAddress) {
         User currentUser = getCurrentUser();
         ShippingAddress address = shippingAddressRepository.findById(addressId)
@@ -58,7 +73,7 @@ public class ShippingAddressService {
         address.setCountry(updatedAddress.getCountry());
         address.setNotes(updatedAddress.getNotes());
 
-        // Nếu đặt là default, thì các địa chỉ khác không phải default
+        // If this address is set to default, unset the others.
         if (updatedAddress.isDefault() && !address.isDefault()) {
             shippingAddressRepository.findByUserId(currentUser.getId()).forEach(addr -> {
                 addr.setDefault(false);
@@ -66,11 +81,16 @@ public class ShippingAddressService {
             });
         }
 
+        if (!updatedAddress.isDefault() && address.isDefault()) {
+            throw new IllegalArgumentException("Default address cannot be unset directly. Set another address as default first");
+        }
+
         address.setDefault(updatedAddress.isDefault());
 
         return shippingAddressRepository.save(address);
     }
 
+    @Transactional
     public void deleteAddress(Long addressId) {
         User currentUser = getCurrentUser();
         ShippingAddress address = shippingAddressRepository.findById(addressId)
@@ -80,7 +100,17 @@ public class ShippingAddressService {
             throw new RuntimeException("Unauthorized");
         }
 
+        boolean wasDefault = address.isDefault();
         shippingAddressRepository.delete(address);
+
+        if (wasDefault) {
+            List<ShippingAddress> remainingAddresses = shippingAddressRepository.findByUserId(currentUser.getId());
+            if (!remainingAddresses.isEmpty()) {
+                ShippingAddress nextDefault = remainingAddresses.get(0);
+                nextDefault.setDefault(true);
+                shippingAddressRepository.save(nextDefault);
+            }
+        }
     }
 
     public List<ShippingAddress> getCurrentUserAddresses() {
@@ -100,6 +130,7 @@ public class ShippingAddressService {
         return address;
     }
 
+    @Transactional
     public ShippingAddress setDefaultAddress(Long addressId) {
         User currentUser = getCurrentUser();
         ShippingAddress address = shippingAddressRepository.findById(addressId)
@@ -120,15 +151,26 @@ public class ShippingAddressService {
     }
 
     // Deprecated methods (kept for backward compatibility if needed)
+    @Transactional
     public ShippingAddress addAddress(Long userId, ShippingAddress address) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
+        long currentAddressCount = shippingAddressRepository.countByUserId(userId);
+        if (currentAddressCount >= MAX_ADDRESSES_PER_USER) {
+            throw new IllegalArgumentException("Each account can only have up to 3 shipping addresses");
+        }
+
         address.setUser(user);
-        if (address.isDefault()) {
-            shippingAddressRepository.findByUserId(userId).forEach(addr -> {
+        List<ShippingAddress> existingAddresses = shippingAddressRepository.findByUserId(userId);
+        if (existingAddresses.isEmpty()) {
+            address.setDefault(true);
+        } else if (address.isDefault()) {
+            existingAddresses.forEach(addr -> {
                 addr.setDefault(false);
                 shippingAddressRepository.save(addr);
             });
+        } else {
+            address.setDefault(false);
         }
         return shippingAddressRepository.save(address);
     }

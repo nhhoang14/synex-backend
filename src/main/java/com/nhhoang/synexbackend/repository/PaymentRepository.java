@@ -4,4 +4,5 @@ import com.nhhoang.synexbackend.model.Payment;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface PaymentRepository extends JpaRepository<Payment, Long> {
+	void deleteByOrderId(Long orderId);
 }

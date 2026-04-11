@@ -1,5 +1,6 @@
 package com.nhhoang.synexbackend.controller;
 
+import com.nhhoang.synexbackend.dto.ChangePasswordRequest;
 import com.nhhoang.synexbackend.dto.UpdateUserRequest;
 import com.nhhoang.synexbackend.dto.UserDTO;
 import com.nhhoang.synexbackend.service.UserService;
@@ -30,10 +31,10 @@ public class UserController {
         return ResponseEntity.ok(user);
     }
 
-    @DeleteMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<String> deleteUser(@PathVariable Long id) {
-        userService.deleteUser(id);
-        return ResponseEntity.ok("User deleted successfully");
+    @PostMapping("/me/password")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<String> changePassword(@RequestBody ChangePasswordRequest request) {
+        userService.changePassword(request);
+        return ResponseEntity.ok("Password changed successfully");
     }
 }

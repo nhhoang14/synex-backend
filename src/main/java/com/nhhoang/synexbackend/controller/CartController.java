@@ -16,8 +16,8 @@ public class CartController {
     private final CartService cartService;
 
     @PostMapping("/add")
-    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
-    public CartItem addToCart(@RequestParam Long cartId,
+    @PreAuthorize("isAuthenticated()")
+    public CartItem addToCart(@RequestParam(required = false) Long cartId,
                               @RequestParam Long productId,
                               @RequestParam int quantity) {
 
@@ -25,13 +25,39 @@ public class CartController {
     }
 
     @PostMapping
-    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
+    @PreAuthorize("isAuthenticated()")
     public Cart createCart() {
         return cartService.createCart();
     }
 
+    @GetMapping("/me")
+    @PreAuthorize("isAuthenticated()")
+    public Cart getCurrentUserCart() {
+        return cartService.getCurrentUserCart();
+    }
+
+    @PatchMapping("/items/{productId}/increase")
+    @PreAuthorize("isAuthenticated()")
+    public CartItem increaseItemQuantity(@PathVariable Long productId,
+                                         @RequestParam(defaultValue = "1") int amount) {
+        return cartService.increaseItemQuantity(productId, amount);
+    }
+
+    @PatchMapping("/items/{productId}/decrease")
+    @PreAuthorize("isAuthenticated()")
+    public CartItem decreaseItemQuantity(@PathVariable Long productId,
+                                         @RequestParam(defaultValue = "1") int amount) {
+        return cartService.decreaseItemQuantity(productId, amount);
+    }
+
+    @DeleteMapping("/items/{productId}")
+    @PreAuthorize("isAuthenticated()")
+    public void removeFromCart(@PathVariable Long productId) {
+        cartService.removeFromCart(productId);
+    }
+
     @GetMapping("/{cartId}")
-    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
+    @PreAuthorize("isAuthenticated()")
     public Cart getCart(@PathVariable Long cartId) {
         return cartService.getCart(cartId);
     }
