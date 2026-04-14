@@ -1,7 +1,7 @@
 package com.nhhoang.synexbackend.controller.admin;
 
-import com.nhhoang.synexbackend.dto.UpdateRoleRequest;
-import com.nhhoang.synexbackend.dto.UserDTO;
+import com.nhhoang.synexbackend.dto.request.UpdateRoleRequest;
+import com.nhhoang.synexbackend.dto.response.UserDTO;
 import com.nhhoang.synexbackend.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;

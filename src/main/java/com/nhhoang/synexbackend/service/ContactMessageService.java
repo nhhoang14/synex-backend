@@ -1,6 +1,6 @@
 package com.nhhoang.synexbackend.service;
 
-import com.nhhoang.synexbackend.dto.ContactMessageRequest;
+import com.nhhoang.synexbackend.dto.request.ContactMessageRequest;
 import com.nhhoang.synexbackend.model.ContactMessage;
 import com.nhhoang.synexbackend.repository.ContactMessageRepository;
 import lombok.RequiredArgsConstructor;

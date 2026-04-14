@@ -1,9 +1,9 @@
 package com.nhhoang.synexbackend.controller.client;
 
-import com.nhhoang.synexbackend.dto.AuthResponse;
-import com.nhhoang.synexbackend.dto.LoginRequest;
-import com.nhhoang.synexbackend.dto.RefreshTokenRequest;
-import com.nhhoang.synexbackend.dto.RegisterRequest;
+import com.nhhoang.synexbackend.dto.request.LoginRequest;
+import com.nhhoang.synexbackend.dto.request.RefreshTokenRequest;
+import com.nhhoang.synexbackend.dto.request.RegisterRequest;
+import com.nhhoang.synexbackend.dto.response.AuthResponse;
 import com.nhhoang.synexbackend.service.AuthenticationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;

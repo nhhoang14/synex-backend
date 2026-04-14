@@ -1,7 +1,7 @@
 package com.nhhoang.synexbackend.controller.admin;
 
-import com.nhhoang.synexbackend.dto.OrderResponse;
-import com.nhhoang.synexbackend.dto.OrderStatusUpdateRequest;
+import com.nhhoang.synexbackend.dto.request.OrderStatusUpdateRequest;
+import com.nhhoang.synexbackend.dto.response.OrderResponse;
 import com.nhhoang.synexbackend.service.OrderService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;

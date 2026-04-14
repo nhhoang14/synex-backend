@@ -1,8 +1,8 @@
 package com.nhhoang.synexbackend.service;
 
-import com.nhhoang.synexbackend.dto.CreateOrderRequest;
-import com.nhhoang.synexbackend.dto.OrderItemResponse;
-import com.nhhoang.synexbackend.dto.OrderResponse;
+import com.nhhoang.synexbackend.dto.request.CreateOrderRequest;
+import com.nhhoang.synexbackend.dto.response.OrderItemResponse;
+import com.nhhoang.synexbackend.dto.response.OrderResponse;
 import com.nhhoang.synexbackend.model.*;
 import com.nhhoang.synexbackend.repository.*;
 import lombok.RequiredArgsConstructor;

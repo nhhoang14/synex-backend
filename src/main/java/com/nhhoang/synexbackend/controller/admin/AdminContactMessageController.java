@@ -1,6 +1,6 @@
 package com.nhhoang.synexbackend.controller.admin;
 
-import com.nhhoang.synexbackend.dto.ContactMessageStatusUpdateRequest;
+import com.nhhoang.synexbackend.dto.request.ContactMessageStatusUpdateRequest;
 import com.nhhoang.synexbackend.model.ContactMessage;
 import com.nhhoang.synexbackend.service.ContactMessageService;
 import lombok.RequiredArgsConstructor;

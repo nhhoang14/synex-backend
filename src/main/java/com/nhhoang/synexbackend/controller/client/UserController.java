@@ -1,8 +1,8 @@
 package com.nhhoang.synexbackend.controller.client;
 
-import com.nhhoang.synexbackend.dto.ChangePasswordRequest;
-import com.nhhoang.synexbackend.dto.UpdateUserRequest;
-import com.nhhoang.synexbackend.dto.UserDTO;
+import com.nhhoang.synexbackend.dto.request.ChangePasswordRequest;
+import com.nhhoang.synexbackend.dto.request.UpdateUserRequest;
+import com.nhhoang.synexbackend.dto.response.UserDTO;
 import com.nhhoang.synexbackend.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;

@@ -1,8 +1,8 @@
 package com.nhhoang.synexbackend.service;
 
-import com.nhhoang.synexbackend.dto.ChangePasswordRequest;
-import com.nhhoang.synexbackend.dto.UpdateUserRequest;
-import com.nhhoang.synexbackend.dto.UserDTO;
+import com.nhhoang.synexbackend.dto.request.ChangePasswordRequest;
+import com.nhhoang.synexbackend.dto.request.UpdateUserRequest;
+import com.nhhoang.synexbackend.dto.response.UserDTO;
 import com.nhhoang.synexbackend.model.Cart;
 import com.nhhoang.synexbackend.model.User;
 import com.nhhoang.synexbackend.repository.*;

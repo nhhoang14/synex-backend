@@ -1,9 +1,9 @@
 package com.nhhoang.synexbackend.service;
 
-import com.nhhoang.synexbackend.dto.AuthResponse;
-import com.nhhoang.synexbackend.dto.LoginRequest;
-import com.nhhoang.synexbackend.dto.RefreshTokenRequest;
-import com.nhhoang.synexbackend.dto.RegisterRequest;
+import com.nhhoang.synexbackend.dto.request.LoginRequest;
+import com.nhhoang.synexbackend.dto.request.RefreshTokenRequest;
+import com.nhhoang.synexbackend.dto.request.RegisterRequest;
+import com.nhhoang.synexbackend.dto.response.AuthResponse;
 import com.nhhoang.synexbackend.model.Cart;
 import com.nhhoang.synexbackend.model.User;
 import com.nhhoang.synexbackend.repository.CartRepository;
