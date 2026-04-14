@@ -1,4 +1,4 @@
-package com.nhhoang.synexbackend.controller;
+package com.nhhoang.synexbackend.controller.client;
 
 import com.nhhoang.synexbackend.dto.ChangePasswordRequest;
 import com.nhhoang.synexbackend.dto.UpdateUserRequest;

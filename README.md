@@ -175,6 +175,9 @@ Note for UI flow:
 - `GET /api/admin/orders`
 - `GET /api/admin/orders/{orderId}`
 - `PATCH /api/admin/orders/{orderId}/status`
+- `GET /api/admin/contact-messages`
+- `PATCH /api/admin/contact-messages/{id}/status`
+- `DELETE /api/admin/contact-messages/{id}`
 
 ## Notes
 

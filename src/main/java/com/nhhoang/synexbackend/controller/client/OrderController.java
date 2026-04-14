@@ -1,4 +1,4 @@
-package com.nhhoang.synexbackend.controller;
+package com.nhhoang.synexbackend.controller.client;
 
 import com.nhhoang.synexbackend.dto.CreateOrderRequest;
 import com.nhhoang.synexbackend.dto.OrderResponse;

@@ -1,4 +1,4 @@
-package com.nhhoang.synexbackend.controller;
+package com.nhhoang.synexbackend.controller.client;
 
 import com.nhhoang.synexbackend.model.Product;
 import com.nhhoang.synexbackend.service.ProductService;

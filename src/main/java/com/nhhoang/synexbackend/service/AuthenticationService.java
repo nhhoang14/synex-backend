@@ -63,11 +63,17 @@ public class AuthenticationService {
             throw new IllegalArgumentException("Email and password are required");
         }
 
+        String email = request.getEmail().trim();
+        String password = request.getPassword();
+        if (email.isBlank() || password.isBlank()) {
+            throw new IllegalArgumentException("Email and password are required");
+        }
+
         authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword())
+                new UsernamePasswordAuthenticationToken(email, password)
         );
 
-        User user = userRepository.findByEmail(request.getEmail().trim())
+        User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
         UserDetails userDetails = userDetailsService.loadUserByUsername(user.getEmail());

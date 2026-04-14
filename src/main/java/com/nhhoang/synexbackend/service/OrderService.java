@@ -27,6 +27,7 @@ public class OrderService {
     private final ShippingAddressRepository shippingAddressRepository;
     private final UserRepository userRepository;
     private final ProductRepository productRepository;
+    private final ProductVariantRepository productVariantRepository;
 
     private User getCurrentUser() {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
@@ -65,20 +66,31 @@ public class OrderService {
             Product product = productRepository.findById(cartItem.getProduct().getId())
                     .orElseThrow(() -> new RuntimeException("Product not found"));
 
-            if (product.getStockQuantity() < cartItem.getQuantity()) {
+            ProductVariant variant = resolveOrderVariant(product, cartItem.getVariant());
+
+            double unitPrice = variant != null ? variant.getPrice() : product.getPrice();
+            int availableStock = variant != null ? variant.getStockQuantity() : product.getStockQuantity();
+
+            if (availableStock < cartItem.getQuantity()) {
                 throw new RuntimeException("Insufficient stock for product: " + product.getName());
             }
 
-            product.setStockQuantity(product.getStockQuantity() - cartItem.getQuantity());
-            productRepository.save(product);
+            if (variant != null) {
+                variant.setStockQuantity(variant.getStockQuantity() - cartItem.getQuantity());
+                productVariantRepository.save(variant);
+            } else {
+                product.setStockQuantity(product.getStockQuantity() - cartItem.getQuantity());
+                productRepository.save(product);
+            }
 
             OrderItem orderItem = new OrderItem();
             orderItem.setOrder(order);
             orderItem.setProduct(product);
+            orderItem.setVariant(variant);
             orderItem.setQuantity(cartItem.getQuantity());
-            orderItem.setPrice(product.getPrice());
+            orderItem.setPrice(unitPrice);
 
-            totalAmount += product.getPrice() * cartItem.getQuantity();
+            totalAmount += unitPrice * cartItem.getQuantity();
             savedItems.add(orderItemRepository.save(orderItem));
         }
 
@@ -166,7 +178,7 @@ public class OrderService {
         List<OrderItemResponse> itemResponses = items.stream()
                 .map(item -> new OrderItemResponse(
                         item.getProduct().getId(),
-                        item.getProduct().getName(),
+                buildOrderItemName(item),
                         item.getQuantity(),
                         item.getPrice(),
                         item.getPrice() * item.getQuantity()
@@ -183,5 +195,37 @@ public class OrderService {
                 order.getCreatedAt(),
                 itemResponses
         );
+    }
+
+    private ProductVariant resolveOrderVariant(Product product, ProductVariant variantFromCart) {
+        if (variantFromCart == null) {
+            return null;
+        }
+
+        ProductVariant variant = productVariantRepository.findById(variantFromCart.getId())
+                .orElseThrow(() -> new RuntimeException("Product variant not found"));
+
+        if (!variant.getProduct().getId().equals(product.getId())) {
+            throw new RuntimeException("Variant does not belong to selected product");
+        }
+
+        if (!variant.isActive()) {
+            throw new RuntimeException("Selected variant is inactive");
+        }
+
+        return variant;
+    }
+
+    private String buildOrderItemName(OrderItem item) {
+        if (item.getVariant() == null) {
+            return item.getProduct().getName();
+        }
+
+        String sku = item.getVariant().getSku();
+        if (sku == null || sku.isBlank()) {
+            return item.getProduct().getName();
+        }
+
+        return item.getProduct().getName() + " [" + sku + "]";
     }
 }

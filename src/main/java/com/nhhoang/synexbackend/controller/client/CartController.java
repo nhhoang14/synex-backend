@@ -1,4 +1,4 @@
-package com.nhhoang.synexbackend.controller;
+package com.nhhoang.synexbackend.controller.client;
 
 import com.nhhoang.synexbackend.model.Cart;
 import com.nhhoang.synexbackend.model.CartItem;
@@ -19,9 +19,10 @@ public class CartController {
     @PreAuthorize("isAuthenticated()")
     public CartItem addToCart(@RequestParam(required = false) Long cartId,
                               @RequestParam Long productId,
+                              @RequestParam(required = false) Long variantId,
                               @RequestParam int quantity) {
 
-        return cartService.addToCart(cartId, productId, quantity);
+        return cartService.addToCart(cartId, productId, variantId, quantity);
     }
 
     @PostMapping
@@ -39,21 +40,24 @@ public class CartController {
     @PatchMapping("/items/{productId}/increase")
     @PreAuthorize("isAuthenticated()")
     public CartItem increaseItemQuantity(@PathVariable Long productId,
+                                         @RequestParam(required = false) Long variantId,
                                          @RequestParam(defaultValue = "1") int amount) {
-        return cartService.increaseItemQuantity(productId, amount);
+        return cartService.increaseItemQuantity(productId, variantId, amount);
     }
 
     @PatchMapping("/items/{productId}/decrease")
     @PreAuthorize("isAuthenticated()")
     public CartItem decreaseItemQuantity(@PathVariable Long productId,
+                                         @RequestParam(required = false) Long variantId,
                                          @RequestParam(defaultValue = "1") int amount) {
-        return cartService.decreaseItemQuantity(productId, amount);
+        return cartService.decreaseItemQuantity(productId, variantId, amount);
     }
 
     @DeleteMapping("/items/{productId}")
     @PreAuthorize("isAuthenticated()")
-    public void removeFromCart(@PathVariable Long productId) {
-        cartService.removeFromCart(productId);
+    public void removeFromCart(@PathVariable Long productId,
+                               @RequestParam(required = false) Long variantId) {
+        cartService.removeFromCart(productId, variantId);
     }
 
     @GetMapping("/{cartId}")
