@@ -15,6 +15,8 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Optional;
+
 @Service
 @RequiredArgsConstructor
 public class CartService {
@@ -38,9 +40,7 @@ public class CartService {
 
         ProductVariant variant = resolveVariant(product, variantId);
 
-        CartItem item = (variant != null
-                ? cartItemRepository.findByCartIdAndProductIdAndVariantId(cart.getId(), productId, variant.getId())
-                : cartItemRepository.findByCartIdAndProductIdAndVariantIsNull(cart.getId(), productId))
+        CartItem item = findCartItem(cart.getId(), productId, variantId)
                 .orElseGet(() -> createCartItem(cart, product, variant));
 
         int updatedQuantity = item.getQuantity() + quantity;
@@ -48,9 +48,6 @@ public class CartService {
             throw new RuntimeException("Insufficient stock for product: " + product.getName());
         }
 
-        item.setCart(cart);
-        item.setProduct(product);
-        item.setVariant(variant);
         item.setQuantity(updatedQuantity);
 
         return cartItemRepository.save(item);
@@ -74,14 +71,7 @@ public class CartService {
 
     public Cart createCart() {
         User currentUser = getCurrentUser();
-        Cart existingCart = cartRepository.findByUserId(currentUser.getId());
-        if (existingCart != null) {
-            return existingCart;
-        }
-
-        Cart cart = new Cart();
-        cart.setUser(currentUser);
-        return cartRepository.save(cart);
+        return getOrCreateCurrentUserCart(currentUser);
     }
 
     @Transactional
@@ -141,14 +131,7 @@ public class CartService {
 
     private Cart resolveCurrentUserCart() {
         User currentUser = getCurrentUser();
-        Cart cart = cartRepository.findByUserId(currentUser.getId());
-        if (cart != null) {
-            return cart;
-        }
-
-        Cart newCart = new Cart();
-        newCart.setUser(currentUser);
-        return cartRepository.save(newCart);
+        return getOrCreateCurrentUserCart(currentUser);
     }
 
     private Cart getCurrentUserCartOrThrow() {
@@ -161,16 +144,27 @@ public class CartService {
         return cart;
     }
 
-    private CartItem getCurrentUserCartItem(Long productId) {
-        return getCurrentUserCartItem(productId, null);
-    }
-
     private CartItem getCurrentUserCartItem(Long productId, Long variantId) {
         Cart cart = getCurrentUserCartOrThrow();
-        return (variantId != null
-                ? cartItemRepository.findByCartIdAndProductIdAndVariantId(cart.getId(), productId, variantId)
-                : cartItemRepository.findByCartIdAndProductIdAndVariantIsNull(cart.getId(), productId))
+        return findCartItem(cart.getId(), productId, variantId)
                 .orElseThrow(() -> new RuntimeException("Product is not in cart"));
+    }
+
+    private Optional<CartItem> findCartItem(Long cartId, Long productId, Long variantId) {
+        return variantId != null
+                ? cartItemRepository.findByCartIdAndProductIdAndVariantId(cartId, productId, variantId)
+                : cartItemRepository.findByCartIdAndProductIdAndVariantIsNull(cartId, productId);
+    }
+
+    private Cart getOrCreateCurrentUserCart(User currentUser) {
+        Cart existingCart = cartRepository.findByUserId(currentUser.getId());
+        if (existingCart != null) {
+            return existingCart;
+        }
+
+        Cart cart = new Cart();
+        cart.setUser(currentUser);
+        return cartRepository.save(cart);
     }
 
     private CartItem createCartItem(Cart cart, Product product, ProductVariant variant) {

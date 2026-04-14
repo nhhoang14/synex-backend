@@ -1,15 +1,12 @@
-package com.nhhoang.synexbackend.dto;
+package com.nhhoang.synexbackend.dto.request;
 
 import lombok.*;
 
-@Getter
-@Setter
+@Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Data
-public class RegisterRequest {
+public class UpdateUserRequest {
     private String username;
     private String email;
-    private String password;
     private String phone;
 }

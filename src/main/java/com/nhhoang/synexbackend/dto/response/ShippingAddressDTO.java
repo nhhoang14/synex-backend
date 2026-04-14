@@ -1,12 +1,10 @@
-package com.nhhoang.synexbackend.dto;
+package com.nhhoang.synexbackend.dto.response;
 
 import lombok.*;
 
-@Getter
-@Setter
+@Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Data
 public class ShippingAddressDTO {
     private Long id;
     private String fullName;

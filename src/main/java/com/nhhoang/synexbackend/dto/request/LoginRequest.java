@@ -1,12 +1,10 @@
-package com.nhhoang.synexbackend.dto;
+package com.nhhoang.synexbackend.dto.request;
 
 import lombok.*;
 
-@Getter
-@Setter
+@Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Data
 public class LoginRequest {
     private String email;
     private String password;

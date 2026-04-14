@@ -1,4 +1,4 @@
-package com.nhhoang.synexbackend.dto;
+package com.nhhoang.synexbackend.dto.request;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
