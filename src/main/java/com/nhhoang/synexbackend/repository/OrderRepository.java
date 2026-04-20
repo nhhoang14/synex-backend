@@ -1,6 +1,6 @@
 package com.nhhoang.synexbackend.repository;
 
-import com.nhhoang.synexbackend.model.Order;
+import com.nhhoang.synexbackend.entity.Order;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;

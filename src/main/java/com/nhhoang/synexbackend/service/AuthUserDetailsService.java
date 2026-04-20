@@ -16,7 +16,7 @@ public class AuthUserDetailsService implements UserDetailsService {
 
     @Override
         public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-        com.nhhoang.synexbackend.model.User appUser = userRepository.findByEmail(email)
+        com.nhhoang.synexbackend.entity.User appUser = userRepository.findByEmail(email)
             .orElseThrow(() -> new UsernameNotFoundException("User not found: " + email));
 
         String normalizedRole = normalizeRole(appUser.getRole());

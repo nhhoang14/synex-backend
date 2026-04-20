@@ -1,6 +1,6 @@
 package com.nhhoang.synexbackend.controller.client;
 
-import com.nhhoang.synexbackend.model.Brand;
+import com.nhhoang.synexbackend.entity.Brand;
 import com.nhhoang.synexbackend.repository.BrandRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;

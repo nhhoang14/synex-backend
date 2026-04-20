@@ -1,7 +1,7 @@
 package com.nhhoang.synexbackend.service;
 
-import com.nhhoang.synexbackend.model.ShippingAddress;
-import com.nhhoang.synexbackend.model.User;
+import com.nhhoang.synexbackend.entity.ShippingAddress;
+import com.nhhoang.synexbackend.entity.User;
 import com.nhhoang.synexbackend.repository.ShippingAddressRepository;
 import com.nhhoang.synexbackend.repository.UserRepository;
 import lombok.RequiredArgsConstructor;

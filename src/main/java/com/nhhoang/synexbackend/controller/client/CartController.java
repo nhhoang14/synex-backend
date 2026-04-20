@@ -1,7 +1,7 @@
 package com.nhhoang.synexbackend.controller.client;
 
-import com.nhhoang.synexbackend.model.Cart;
-import com.nhhoang.synexbackend.model.CartItem;
+import com.nhhoang.synexbackend.entity.Cart;
+import com.nhhoang.synexbackend.entity.CartItem;
 import com.nhhoang.synexbackend.service.CartService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;

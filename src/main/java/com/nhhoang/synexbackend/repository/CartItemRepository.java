@@ -1,6 +1,6 @@
 package com.nhhoang.synexbackend.repository;
 
-import com.nhhoang.synexbackend.model.CartItem;
+import com.nhhoang.synexbackend.entity.CartItem;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;

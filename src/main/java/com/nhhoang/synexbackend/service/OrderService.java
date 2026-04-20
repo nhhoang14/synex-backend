@@ -3,7 +3,7 @@ package com.nhhoang.synexbackend.service;
 import com.nhhoang.synexbackend.dto.request.CreateOrderRequest;
 import com.nhhoang.synexbackend.dto.response.OrderItemResponse;
 import com.nhhoang.synexbackend.dto.response.OrderResponse;
-import com.nhhoang.synexbackend.model.*;
+import com.nhhoang.synexbackend.entity.*;
 import com.nhhoang.synexbackend.repository.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.context.SecurityContextHolder;

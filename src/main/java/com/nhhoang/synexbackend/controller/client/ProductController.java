@@ -1,6 +1,6 @@
 package com.nhhoang.synexbackend.controller.client;
 
-import com.nhhoang.synexbackend.model.Product;
+import com.nhhoang.synexbackend.entity.Product;
 import com.nhhoang.synexbackend.service.ProductService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;

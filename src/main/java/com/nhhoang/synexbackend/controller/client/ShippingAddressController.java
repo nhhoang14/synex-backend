@@ -1,6 +1,6 @@
 package com.nhhoang.synexbackend.controller.client;
 
-import com.nhhoang.synexbackend.model.ShippingAddress;
+import com.nhhoang.synexbackend.entity.ShippingAddress;
 import com.nhhoang.synexbackend.service.ShippingAddressService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;

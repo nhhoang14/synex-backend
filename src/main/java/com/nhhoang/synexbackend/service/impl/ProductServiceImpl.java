@@ -1,6 +1,6 @@
 package com.nhhoang.synexbackend.service.impl;
 
-import com.nhhoang.synexbackend.model.Product;
+import com.nhhoang.synexbackend.entity.Product;
 import com.nhhoang.synexbackend.repository.ProductRepository;
 import com.nhhoang.synexbackend.service.ProductService;
 import lombok.RequiredArgsConstructor;

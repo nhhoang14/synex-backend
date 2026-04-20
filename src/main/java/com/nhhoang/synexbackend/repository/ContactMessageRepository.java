@@ -1,6 +1,6 @@
 package com.nhhoang.synexbackend.repository;
 
-import com.nhhoang.synexbackend.model.ContactMessage;
+import com.nhhoang.synexbackend.entity.ContactMessage;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;

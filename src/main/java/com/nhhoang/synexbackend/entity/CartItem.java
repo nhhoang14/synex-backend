@@ -1,4 +1,4 @@
-package com.nhhoang.synexbackend.model;
+package com.nhhoang.synexbackend.entity;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 

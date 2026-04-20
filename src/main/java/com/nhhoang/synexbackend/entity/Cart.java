@@ -1,4 +1,4 @@
-package com.nhhoang.synexbackend.model;
+package com.nhhoang.synexbackend.entity;
 
 import jakarta.persistence.*;
 import lombok.*;

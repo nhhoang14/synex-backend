@@ -1,10 +1,10 @@
 package com.nhhoang.synexbackend.service;
 
-import com.nhhoang.synexbackend.model.Cart;
-import com.nhhoang.synexbackend.model.CartItem;
-import com.nhhoang.synexbackend.model.Product;
-import com.nhhoang.synexbackend.model.ProductVariant;
-import com.nhhoang.synexbackend.model.User;
+import com.nhhoang.synexbackend.entity.Cart;
+import com.nhhoang.synexbackend.entity.CartItem;
+import com.nhhoang.synexbackend.entity.Product;
+import com.nhhoang.synexbackend.entity.ProductVariant;
+import com.nhhoang.synexbackend.entity.User;
 import com.nhhoang.synexbackend.repository.CartItemRepository;
 import com.nhhoang.synexbackend.repository.CartRepository;
 import com.nhhoang.synexbackend.repository.ProductRepository;

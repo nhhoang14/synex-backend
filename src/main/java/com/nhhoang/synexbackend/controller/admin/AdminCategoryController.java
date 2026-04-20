@@ -1,6 +1,6 @@
 package com.nhhoang.synexbackend.controller.admin;
 
-import com.nhhoang.synexbackend.model.Category;
+import com.nhhoang.synexbackend.entity.Category;
 import com.nhhoang.synexbackend.repository.CategoryRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;

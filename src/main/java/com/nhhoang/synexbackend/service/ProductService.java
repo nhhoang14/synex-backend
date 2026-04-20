@@ -1,6 +1,6 @@
 package com.nhhoang.synexbackend.service;
 
-import com.nhhoang.synexbackend.model.Product;
+import com.nhhoang.synexbackend.entity.Product;
 
 import java.util.List;
 import java.util.Optional;

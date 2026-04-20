@@ -1,6 +1,6 @@
 package com.nhhoang.synexbackend.controller.client;
 
-import com.nhhoang.synexbackend.model.Category;
+import com.nhhoang.synexbackend.entity.Category;
 import com.nhhoang.synexbackend.repository.CategoryRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;

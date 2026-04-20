@@ -1,6 +1,6 @@
 package com.nhhoang.synexbackend.repository;
 
-import com.nhhoang.synexbackend.model.ShippingAddress;
+import com.nhhoang.synexbackend.entity.ShippingAddress;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

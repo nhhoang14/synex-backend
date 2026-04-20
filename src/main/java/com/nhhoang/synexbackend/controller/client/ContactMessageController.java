@@ -1,7 +1,7 @@
 package com.nhhoang.synexbackend.controller.client;
 
 import com.nhhoang.synexbackend.dto.request.ContactMessageRequest;
-import com.nhhoang.synexbackend.model.ContactMessage;
+import com.nhhoang.synexbackend.entity.ContactMessage;
 import com.nhhoang.synexbackend.service.ContactMessageService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
