@@ -23,6 +23,9 @@ Spring Boot backend for an e-commerce system with JWT authentication, role-based
 - Checkout and order creation
 - Order history for customers
 - Profile update and password change
+- Product variant and variant price management for admin
+- Voucher management and validation APIs
+- User review APIs (create/update/delete own reviews) and admin review moderation
 - Admin APIs for managing users, products, categories, brands, and orders
 
 ## Project Structure
@@ -73,111 +76,166 @@ To compile only:
 
 ## API Overview
 
-### Auth
+All endpoints return JSON responses. Endpoints marked with 🔐 require authentication.
 
-- `POST /api/auth/register`
-- `POST /api/auth/login`
-- `POST /api/auth/logout`
-- `POST /api/auth/refresh`
+### Authentication
 
-### Public
+- `POST /api/auth/register` - Register new user
+- `POST /api/auth/login` - Login user
+- `POST /api/auth/logout` - Logout user
+- `POST /api/auth/refresh` - Refresh JWT token
 
-- `GET /api/products`
-- `GET /api/products/{id}`
-- `GET /api/categories`
-- `GET /api/brands`
+### Products (Public)
 
-### User
+- `GET /api/products` - Get all products
+- `GET /api/products/{id}` - Get product by ID
 
-- `GET /api/users/me`
-- `PUT /api/users/me`
-- `POST /api/users/me/password`
-- `GET /api/users/me/addresses`
-- `POST /api/users/me/addresses`
-- `GET /api/users/me/addresses/{addressId}`
-- `PUT /api/users/me/addresses/{addressId}`
-- `DELETE /api/users/me/addresses/{addressId}`
-- `PATCH /api/users/me/addresses/{addressId}/default`
+### Categories (Public)
 
-### Cart
+- `GET /api/categories` - Get all categories
 
-- `POST /api/cart` - create or return the current user's cart
-- `POST /api/cart/add?productId=1&quantity=2` - add a product to the current user's cart; `cartId` is optional
-- `GET /api/cart/me` - get the current user's cart
-- `PATCH /api/cart/items/{productId}/increase?amount=1` - increase quantity of a cart item
-- `PATCH /api/cart/items/{productId}/decrease?amount=1` - decrease quantity of a cart item (minimum quantity is 1)
-- `DELETE /api/cart/items/{productId}` - remove a product from the current user's cart
-- `GET /api/cart/{cartId}` - get a cart by id
+### Brands (Public)
 
-### Orders
+- `GET /api/brands` - Get all brands
 
-- `POST /api/orders`
-- `GET /api/orders`
-- `GET /api/orders/{orderId}`
+### Contact Messages
 
-## Shipping Address Rules
+- `POST /api/contact-messages` - Create a contact message (public)
 
-- One account can have at most 3 shipping addresses.
-- The first address is automatically set as default.
-- At any time, only one address can be default.
-- If a default address is deleted, the system automatically assigns another existing address as default.
-- You cannot unset the current default directly; set another address as default first.
+### User Profile 🔐
 
-## Checkout Address Behavior
+- `GET /api/users/me` - Get current user profile
+- `PUT /api/users/me` - Update current user profile
+- `POST /api/users/me/password` - Change password
+
+### Shipping Addresses 🔐
+
+- `POST /api/users/me/addresses` - Add new shipping address (max 3 per user)
+- `GET /api/users/me/addresses` - Get all user's shipping addresses
+- `GET /api/users/me/addresses/{addressId}` - Get specific shipping address
+- `PUT /api/users/me/addresses/{addressId}` - Update shipping address
+- `DELETE /api/users/me/addresses/{addressId}` - Delete shipping address
+- `PATCH /api/users/me/addresses/{addressId}/default` - Set address as default
+
+#### Shipping Address Rules
+
+- One account can have at most 3 shipping addresses
+- The first address is automatically set as default
+- At any time, only one address can be default
+- If a default address is deleted, the system automatically assigns another existing address as default
+- You cannot unset the current default directly; set another address as default first
+
+### Cart 🔐
+
+- `POST /api/cart` - Create or get current user's cart
+- `POST /api/cart/add?productId=X&quantity=Y` - Add product to cart (supports optional `cartId`, `variantId`)
+- `GET /api/cart/me` - Get current user's cart
+- `GET /api/cart/{cartId}` - Get cart by ID
+- `PATCH /api/cart/items/{productId}/increase?amount=1` - Increase item quantity (supports optional `variantId`, `amount` defaults to 1)
+- `PATCH /api/cart/items/{productId}/decrease?amount=1` - Decrease item quantity (min quantity is 1, supports optional `variantId`, `amount` defaults to 1)
+- `DELETE /api/cart/items/{productId}` - Remove product from cart (supports optional `variantId`)
+
+### Orders 🔐
+
+- `POST /api/orders` - Create order
+- `GET /api/orders` - Get current user's orders
+- `GET /api/orders/{orderId}` - Get specific order
+
+#### Order Checkout Behavior
 
 For `POST /api/orders`:
+- If `shippingAddressId` is provided, the order uses that address (must belong to current user)
+- If `shippingAddressId` is omitted or null, the system uses the user's default address
+- If no default address exists, the order request is rejected
 
-- If `shippingAddressId` is provided, the order uses that address (must belong to current user).
-- If `shippingAddressId` is omitted or null, the system uses the user's default address.
-- If no default address exists, the order request is rejected.
-
-Example using default address automatically:
-
+Example with default address:
 ```json
 {
-	"paymentMethod": "COD"
+  "paymentMethod": "COD"
 }
 ```
 
-Example selecting a specific address:
-
+Example with specific address:
 ```json
 {
-	"shippingAddressId": 12,
-	"paymentMethod": "CARD"
+  "shippingAddressId": 12,
+  "paymentMethod": "CARD"
 }
 ```
 
-Note for UI flow:
+### Reviews
 
-- If user does not change anything at checkout, submit order without `shippingAddressId` to use default.
-- If user wants another address, user must explicitly select it.
-- If user wants to edit address info or change which one is default, user must update address first via address APIs, then place order.
+- `GET /api/reviews/product/{productId}` - Get all reviews for a product (public)
+- `GET /api/reviews/me` - Get current user's reviews 🔐
+- `POST /api/reviews` - Create a new review for a product 🔐
+- `PUT /api/reviews/{reviewId}` - Update current user's review 🔐
+- `DELETE /api/reviews/{reviewId}` - Delete current user's review 🔐
 
-### Admin
+### Vouchers 🔐
 
-- `GET /api/admin/users`
-- `GET /api/admin/users/{id}`
-- `PUT /api/admin/users/{id}/role`
-- `DELETE /api/admin/users/{id}`
-- `GET /api/admin/products`
-- `POST /api/admin/products`
-- `PUT /api/admin/products/{id}`
-- `DELETE /api/admin/products/{id}`
-- `GET /api/admin/categories`
-- `POST /api/admin/categories`
-- `PUT /api/admin/categories/{id}`
-- `DELETE /api/admin/categories/{id}`
-- `GET /api/admin/brands`
-- `POST /api/admin/brands`
-- `PUT /api/admin/brands/{id}`
-- `DELETE /api/admin/brands/{id}`
-- `GET /api/admin/orders`
-- `GET /api/admin/orders/{orderId}`
-- `PATCH /api/admin/orders/{orderId}/status`
-- `GET /api/admin/contact-messages`
-- `PATCH /api/admin/contact-messages/{id}/status`
-- `DELETE /api/admin/contact-messages/{id}`
+- `GET /api/vouchers/validate?code=CODE&orderAmount=100000` - Validate voucher and calculate discount
+
+### Admin: Users (Admin only) 🔐
+
+- `GET /api/admin/users` - Get all users
+- `GET /api/admin/users/{id}` - Get user by ID
+- `PUT /api/admin/users/{id}/role` - Update user role
+- `DELETE /api/admin/users/{id}` - Delete user
+
+### Admin: Products (Admin only) 🔐
+
+- `POST /api/admin/products` - Create product
+- `PUT /api/admin/products/{id}` - Update product
+- `DELETE /api/admin/products/{id}` - Delete product
+
+### Admin: Product Variants (Admin only) 🔐
+
+- `GET /api/admin/products/{productId}/variants` - Get all variants of a product
+- `POST /api/admin/products/{productId}/variants` - Create variant for product
+- `PUT /api/admin/products/{productId}/variants/{variantId}` - Update variant info
+- `PATCH /api/admin/products/{productId}/variants/{variantId}/price` - Update only variant price
+- `DELETE /api/admin/products/{productId}/variants/{variantId}` - Delete variant
+
+### Admin: Categories (Admin only) 🔐
+
+- `GET /api/admin/categories` - Get all categories
+- `POST /api/admin/categories` - Create category
+- `PUT /api/admin/categories/{id}` - Update category
+- `DELETE /api/admin/categories/{id}` - Delete category
+
+### Admin: Brands (Admin only) 🔐
+
+- `GET /api/admin/brands` - Get all brands
+- `POST /api/admin/brands` - Create brand
+- `PUT /api/admin/brands/{id}` - Update brand
+- `DELETE /api/admin/brands/{id}` - Delete brand
+
+### Admin: Orders (Admin only) 🔐
+
+- `GET /api/admin/orders` - Get all orders
+- `GET /api/admin/orders/{orderId}` - Get order by ID
+- `PATCH /api/admin/orders/{orderId}/status` - Update order status
+
+### Admin: Vouchers (Admin only) 🔐
+
+- `GET /api/admin/vouchers` - Get all vouchers
+- `GET /api/admin/vouchers/{id}` - Get voucher by ID
+- `POST /api/admin/vouchers` - Create voucher
+- `PUT /api/admin/vouchers/{id}` - Update voucher
+- `PATCH /api/admin/vouchers/{id}/active?active=true|false` - Enable/disable voucher
+- `DELETE /api/admin/vouchers/{id}` - Delete voucher
+
+### Admin: Reviews (Admin only) 🔐
+
+- `GET /api/admin/reviews` - Get all reviews
+- `GET /api/admin/reviews/product/{productId}` - Get all reviews by product
+- `DELETE /api/admin/reviews/{reviewId}` - Delete review
+
+### Admin: Contact Messages (Admin only) 🔐
+
+- `GET /api/admin/contact-messages` - Get all contact messages
+- `PATCH /api/admin/contact-messages/{id}/status` - Update contact message status
+- `DELETE /api/admin/contact-messages/{id}` - Delete contact message
 
 ## Notes
 
