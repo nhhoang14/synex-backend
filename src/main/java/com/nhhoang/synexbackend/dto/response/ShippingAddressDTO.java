@@ -13,9 +13,6 @@ public class ShippingAddressDTO {
     private String ward;
     private String district;
     private String city;
-    private String state;
-    private String zipCode;
-    private String country;
     private String notes;
     private boolean isDefault;
 }

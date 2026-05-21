@@ -17,9 +17,6 @@ public class ShippingAddressRequest {
     private String ward;
     private String district;
     private String city;
-    private String state;
-    private String zipCode;
-    private String country;
     private String notes;
 
     @JsonProperty("default")
