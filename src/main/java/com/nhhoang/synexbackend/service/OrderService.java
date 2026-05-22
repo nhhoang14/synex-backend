@@ -51,7 +51,7 @@ public class OrderService {
 
         Order order = new Order();
         order.setUser(currentUser);
-        order.setShippingAddress(shippingAddress);
+        copyShippingSnapshot(order, shippingAddress);
         order.setStatus("PENDING");
         order.setPaymentMethod(request.getPaymentMethod() == null || request.getPaymentMethod().isBlank()
                 ? "COD"
@@ -188,13 +188,29 @@ public class OrderService {
         return new OrderResponse(
                 order.getId(),
                 order.getUser() == null ? null : order.getUser().getId(),
-                order.getShippingAddress() == null ? null : order.getShippingAddress().getId(),
                 order.getTotalAmount(),
                 order.getStatus(),
                 order.getPaymentMethod(),
                 order.getCreatedAt(),
+                order.getShippingFullName(),
+                order.getShippingPhone(),
+                order.getShippingStreet(),
+                order.getShippingWard(),
+                order.getShippingDistrict(),
+                order.getShippingCity(),
+                order.getShippingNotes(),
                 itemResponses
         );
+    }
+
+    private void copyShippingSnapshot(Order order, ShippingAddress shippingAddress) {
+        order.setShippingFullName(shippingAddress.getFullName());
+        order.setShippingPhone(shippingAddress.getPhone());
+        order.setShippingStreet(shippingAddress.getStreet());
+        order.setShippingWard(shippingAddress.getWard());
+        order.setShippingDistrict(shippingAddress.getDistrict());
+        order.setShippingCity(shippingAddress.getCity());
+        order.setShippingNotes(null);
     }
 
     private ProductVariant resolveOrderVariant(Product product, ProductVariant variantFromCart) {

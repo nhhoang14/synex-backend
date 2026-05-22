@@ -13,10 +13,16 @@ import java.util.List;
 public class OrderResponse {
     private Long id;
     private Long userId;
-    private Long shippingAddressId;
     private double totalAmount;
     private String status;
     private String paymentMethod;
     private LocalDateTime createdAt;
+    private String shippingFullName;
+    private String shippingPhone;
+    private String shippingStreet;
+    private String shippingWard;
+    private String shippingDistrict;
+    private String shippingCity;
+    private String shippingNotes;
     private List<OrderItemResponse> items;
 }

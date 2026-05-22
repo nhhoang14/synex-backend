@@ -68,7 +68,6 @@ public class ShippingAddressService {
         address.setWard(updatedAddress.getWard());
         address.setDistrict(updatedAddress.getDistrict());
         address.setCity(updatedAddress.getCity());
-        address.setNotes(updatedAddress.getNotes());
 
         // If this address is set to default, unset the others.
         if (updatedAddress.isDefault() && !address.isDefault()) {

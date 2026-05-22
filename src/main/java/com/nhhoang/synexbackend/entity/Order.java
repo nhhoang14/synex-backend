@@ -21,15 +21,23 @@ public class Order {
     private double totalAmount;
     private String status;
     private String paymentMethod;
+
+    // Shipping details
+    private String shippingFullName;
+    private String shippingPhone;
+
+    private String shippingStreet;
+    private String shippingWard;
+    private String shippingDistrict;
+    private String shippingCity;
+
+    private String shippingNotes;
+
     private LocalDateTime createdAt;
 
     @ManyToOne
     @JoinColumn(name = "user_id")
     private User user;
-
-    @ManyToOne
-    @JoinColumn(name = "shipping_address_id")
-    private ShippingAddress shippingAddress;
 
     @OneToMany(mappedBy = "order")
     @JsonIgnore

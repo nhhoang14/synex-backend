@@ -24,7 +24,6 @@ public class ShippingAddress {
     private String district;
     private String city;
 
-    private String notes;
     private boolean isDefault;
 
     @ManyToOne

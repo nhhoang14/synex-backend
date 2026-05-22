@@ -73,7 +73,6 @@ public class ShippingAddressController {
         address.setWard(request.getWard());
         address.setDistrict(request.getDistrict());
         address.setCity(request.getCity());
-        address.setNotes(request.getNotes());
         address.setDefault(Boolean.TRUE.equals(request.getDefaultAddress()));
         return address;
     }
