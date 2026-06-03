@@ -1,6 +1,7 @@
 package com.nhhoang.synexbackend.entity;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.*;
@@ -24,8 +25,12 @@ public class ProductVariant {
 
     private double price;
     private int stockQuantity;
-    private String imageUrl;
     private boolean active = true;
+
+    @OneToOne
+    @JoinColumn(name = "media_id")
+    @JsonIgnore
+    private Media media;
 
     @ManyToOne
     @JoinColumn(name = "product_id", nullable = false)

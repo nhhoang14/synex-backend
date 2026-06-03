@@ -1,6 +1,7 @@
 package com.nhhoang.synexbackend.entity;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -16,7 +17,10 @@ public class ProductImage {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String imageUrl; 
+    @OneToOne
+    @JoinColumn(name = "media_id", nullable = false)
+    @JsonIgnore
+    private Media media;
 
     @ManyToOne
     @JoinColumn(name = "product_id", nullable = false)

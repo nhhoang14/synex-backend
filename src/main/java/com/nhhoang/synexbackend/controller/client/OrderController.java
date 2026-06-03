@@ -25,6 +25,13 @@ public class OrderController {
         return ResponseEntity.status(HttpStatus.CREATED).body(orderService.placeOrder(request));
     }
 
+    @PostMapping("/validate-stock")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<Void> validateStock(@RequestBody CreateOrderRequest request) {
+        orderService.validateSelectedItemsStock(request);
+        return ResponseEntity.ok().build();
+    }
+
     @GetMapping
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<List<OrderResponse>> getMyOrders() {

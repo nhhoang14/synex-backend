@@ -13,6 +13,8 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.Collections;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -49,6 +51,9 @@ public class OrderService {
             throw new RuntimeException("Cart is empty");
         }
 
+        List<CartItem> selectedItems = resolveSelectedCartItems(cart.getItems(), request.getSelectedCartItemIds());
+        validateStockAvailability(selectedItems);
+
         Order order = new Order();
         order.setUser(currentUser);
         copyShippingSnapshot(order, shippingAddress);
@@ -62,7 +67,7 @@ public class OrderService {
 
         order = orderRepository.save(order);
 
-        for (CartItem cartItem : cart.getItems()) {
+        for (CartItem cartItem : selectedItems) {
             Product product = productRepository.findById(cartItem.getProduct().getId())
                     .orElseThrow(() -> new RuntimeException("Product not found"));
 
@@ -104,9 +109,61 @@ public class OrderService {
         payment.setStatus("PENDING");
         paymentRepository.save(payment);
 
-        cartItemRepository.deleteByCartId(cart.getId());
+        cartItemRepository.deleteAll(selectedItems);
 
         return mapToResponse(order, savedItems);
+    }
+
+    public void validateSelectedItemsStock(CreateOrderRequest request) {
+        if (request == null) {
+            throw new IllegalArgumentException("Order request is required");
+        }
+
+        User currentUser = getCurrentUser();
+        Cart cart = cartRepository.findByUserId(currentUser.getId());
+        if (cart == null || cart.getItems() == null || cart.getItems().isEmpty()) {
+            throw new RuntimeException("Cart is empty");
+        }
+
+        List<CartItem> selectedItems = resolveSelectedCartItems(cart.getItems(), request.getSelectedCartItemIds());
+        validateStockAvailability(selectedItems);
+    }
+
+    private List<CartItem> resolveSelectedCartItems(List<CartItem> cartItems, List<Long> selectedCartItemIds) {
+        if (selectedCartItemIds == null || selectedCartItemIds.isEmpty()) {
+            return cartItems;
+        }
+
+        Set<Long> selectedIds = selectedCartItemIds.stream()
+                .collect(Collectors.toSet());
+
+        List<CartItem> selectedItems = cartItems.stream()
+                .filter(item -> item.getId() != null && selectedIds.contains(item.getId()))
+                .toList();
+
+        if (selectedItems.isEmpty()) {
+            throw new RuntimeException("No valid cart items were selected");
+        }
+
+        if (selectedItems.size() != selectedIds.size()) {
+            throw new RuntimeException("Some selected cart items do not belong to the current cart");
+        }
+
+        return selectedItems;
+    }
+
+    private void validateStockAvailability(List<CartItem> cartItems) {
+        for (CartItem cartItem : cartItems) {
+            Product product = productRepository.findById(cartItem.getProduct().getId())
+                    .orElseThrow(() -> new RuntimeException("Product not found"));
+
+            ProductVariant variant = resolveOrderVariant(product, cartItem.getVariant());
+            int availableStock = variant != null ? variant.getStockQuantity() : product.getStockQuantity();
+
+            if (availableStock < cartItem.getQuantity()) {
+                throw new RuntimeException("Insufficient stock for product: " + product.getName());
+            }
+        }
     }
 
     private ShippingAddress resolveShippingAddress(User currentUser, Long requestedAddressId) {
