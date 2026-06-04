@@ -24,7 +24,6 @@ public class OrderService {
     private final OrderRepository orderRepository;
     private final OrderItemRepository orderItemRepository;
     private final PaymentRepository paymentRepository;
-    private final CartRepository cartRepository;
     private final CartItemRepository cartItemRepository;
     private final ShippingAddressRepository shippingAddressRepository;
     private final UserRepository userRepository;
@@ -46,12 +45,12 @@ public class OrderService {
         User currentUser = getCurrentUser();
         ShippingAddress shippingAddress = resolveShippingAddress(currentUser, request.getShippingAddressId());
 
-        Cart cart = cartRepository.findByUserId(currentUser.getId());
-        if (cart == null || cart.getItems() == null || cart.getItems().isEmpty()) {
+        List<CartItem> cartItems = cartItemRepository.findAllByUserId(currentUser.getId());
+        if (cartItems.isEmpty()) {
             throw new RuntimeException("Cart is empty");
         }
 
-        List<CartItem> selectedItems = resolveSelectedCartItems(cart.getItems(), request.getSelectedCartItemIds());
+        List<CartItem> selectedItems = resolveSelectedCartItems(cartItems, request.getSelectedCartItemIds());
         validateStockAvailability(selectedItems);
 
         Order order = new Order();
@@ -120,12 +119,12 @@ public class OrderService {
         }
 
         User currentUser = getCurrentUser();
-        Cart cart = cartRepository.findByUserId(currentUser.getId());
-        if (cart == null || cart.getItems() == null || cart.getItems().isEmpty()) {
+        List<CartItem> cartItems = cartItemRepository.findAllByUserId(currentUser.getId());
+        if (cartItems.isEmpty()) {
             throw new RuntimeException("Cart is empty");
         }
 
-        List<CartItem> selectedItems = resolveSelectedCartItems(cart.getItems(), request.getSelectedCartItemIds());
+        List<CartItem> selectedItems = resolveSelectedCartItems(cartItems, request.getSelectedCartItemIds());
         validateStockAvailability(selectedItems);
     }
 

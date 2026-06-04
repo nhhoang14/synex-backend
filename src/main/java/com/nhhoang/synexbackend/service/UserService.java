@@ -3,7 +3,6 @@ package com.nhhoang.synexbackend.service;
 import com.nhhoang.synexbackend.dto.request.ChangePasswordRequest;
 import com.nhhoang.synexbackend.dto.request.UpdateUserRequest;
 import com.nhhoang.synexbackend.dto.response.UserDTO;
-import com.nhhoang.synexbackend.entity.Cart;
 import com.nhhoang.synexbackend.entity.User;
 import com.nhhoang.synexbackend.repository.*;
 import lombok.RequiredArgsConstructor;
@@ -20,7 +19,6 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
-    private final CartRepository cartRepository;
     private final CartItemRepository cartItemRepository;
     private final ShippingAddressRepository shippingAddressRepository;
     private final OrderItemRepository orderItemRepository;
@@ -63,18 +61,26 @@ public class UserService {
 
         // Update username nếu có
         if (request.getUsername() != null && !request.getUsername().trim().isEmpty()) {
-            user.setUsername(request.getUsername().trim());
+            String newUsername = request.getUsername().trim();
+            if (!newUsername.equals(user.getUsername()) && userRepository.findByUsername(newUsername).isPresent()) {
+                throw new RuntimeException("Username already in use");
+            }
+            user.setUsername(newUsername);
         }
 
         // Update email nếu có
         if (request.getEmail() != null && !request.getEmail().trim().isEmpty()) {
             String newEmail = request.getEmail().trim();
-            // Kiểm tra email mới không trùng với email của user khác
             if (!newEmail.equals(user.getEmail()) && 
                 userRepository.findByEmail(newEmail).isPresent()) {
                 throw new RuntimeException("Email already in use");
             }
             user.setEmail(newEmail);
+        }
+
+        // Update fullName nếu có
+        if (request.getFullName() != null && !request.getFullName().trim().isEmpty()) {
+            user.setFullName(request.getFullName().trim());
         }
 
         // Update phone nếu có
@@ -140,11 +146,7 @@ public class UserService {
         wishlistRepository.deleteByUserId(user.getId());
         shippingAddressRepository.deleteByUserId(user.getId());
 
-        Cart cart = cartRepository.findByUserId(user.getId());
-        if (cart != null) {
-            cartItemRepository.deleteByCartId(cart.getId());
-            cartRepository.deleteByUserId(user.getId());
-        }
+        cartItemRepository.deleteByUserId(user.getId());
         
         userRepository.delete(user);
     }
@@ -169,6 +171,7 @@ public class UserService {
         dto.setId(user.getId());
         dto.setUsername(user.getUsername());
         dto.setEmail(user.getEmail());
+        dto.setFullName(user.getFullName());
         dto.setPhone(user.getPhone());
         dto.setRole(user.getRole());
         return dto;

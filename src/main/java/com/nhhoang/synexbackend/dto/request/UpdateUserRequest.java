@@ -8,5 +8,6 @@ import lombok.*;
 public class UpdateUserRequest {
     private String username;
     private String email;
+    private String fullName;
     private String phone;
 }

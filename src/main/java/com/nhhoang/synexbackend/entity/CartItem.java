@@ -1,7 +1,5 @@
 package com.nhhoang.synexbackend.entity;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
-
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -16,12 +14,9 @@ public class CartItem {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private int quantity;
+    private Long userId;
 
-    @ManyToOne
-    @JoinColumn(name = "cart_id")
-    @JsonBackReference
-    private Cart cart;
+    private int quantity;
 
     @ManyToOne
     @JoinColumn(name = "product_id")

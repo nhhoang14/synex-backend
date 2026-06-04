@@ -18,22 +18,21 @@ public class User {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(unique = true)
     private String username;
+
+    @Column(unique = true)
     private String email;
+    private String fullName;
+    private String phone;
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private String password;
-    private String phone;
     private String role;
 
     @OneToMany(mappedBy = "user")
     @JsonIgnore
     private List<Order> orders;
 
-    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-    @JsonIgnore
-    private Cart cart;
-
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ShippingAddress> shippingAddresses;
-
 }

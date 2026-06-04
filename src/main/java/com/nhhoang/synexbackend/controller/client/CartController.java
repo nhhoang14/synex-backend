@@ -1,11 +1,12 @@
 package com.nhhoang.synexbackend.controller.client;
 
-import com.nhhoang.synexbackend.entity.Cart;
 import com.nhhoang.synexbackend.entity.CartItem;
 import com.nhhoang.synexbackend.service.CartService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/cart")
@@ -17,23 +18,16 @@ public class CartController {
 
     @PostMapping("/add")
     @PreAuthorize("isAuthenticated()")
-    public CartItem addToCart(@RequestParam(required = false) Long cartId,
-                              @RequestParam Long productId,
+    public CartItem addToCart(@RequestParam Long productId,
                               @RequestParam(required = false) Long variantId,
                               @RequestParam int quantity) {
 
-        return cartService.addToCart(cartId, productId, variantId, quantity);
-    }
-
-    @PostMapping
-    @PreAuthorize("isAuthenticated()")
-    public Cart createCart() {
-        return cartService.createCart();
+        return cartService.addToCart(productId, variantId, quantity);
     }
 
     @GetMapping("/me")
     @PreAuthorize("isAuthenticated()")
-    public Cart getCurrentUserCart() {
+    public List<CartItem> getCurrentUserCart() {
         return cartService.getCurrentUserCart();
     }
 
@@ -58,11 +52,5 @@ public class CartController {
     public void removeFromCart(@PathVariable Long productId,
                                @RequestParam(required = false) Long variantId) {
         cartService.removeFromCart(productId, variantId);
-    }
-
-    @GetMapping("/{cartId}")
-    @PreAuthorize("isAuthenticated()")
-    public Cart getCart(@PathVariable Long cartId) {
-        return cartService.getCart(cartId);
     }
 }

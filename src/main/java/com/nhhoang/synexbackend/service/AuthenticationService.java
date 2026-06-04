@@ -4,9 +4,7 @@ import com.nhhoang.synexbackend.dto.request.LoginRequest;
 import com.nhhoang.synexbackend.dto.request.RefreshTokenRequest;
 import com.nhhoang.synexbackend.dto.request.RegisterRequest;
 import com.nhhoang.synexbackend.dto.response.AuthResponse;
-import com.nhhoang.synexbackend.entity.Cart;
 import com.nhhoang.synexbackend.entity.User;
-import com.nhhoang.synexbackend.repository.CartRepository;
 import com.nhhoang.synexbackend.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -21,7 +19,6 @@ import org.springframework.stereotype.Service;
 public class AuthenticationService {
 
     private final UserRepository userRepository;
-    private final CartRepository cartRepository;
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
     private final UserDetailsService userDetailsService;
@@ -36,20 +33,20 @@ public class AuthenticationService {
         if (userRepository.findByEmail(request.getEmail()).isPresent()) {
             throw new RuntimeException("Email already registered");
         }
+        // Kiểm tra username đã tồn tại
+        if (request.getUsername() != null && userRepository.findByUsername(request.getUsername()).isPresent()) {
+            throw new RuntimeException("Username already registered");
+        }
 
         User user = new User();
         user.setUsername(request.getUsername());
         user.setEmail(request.getEmail());
         user.setPassword(passwordEncoder.encode(request.getPassword()));
+        user.setFullName(request.getFullName());
         user.setPhone(request.getPhone());
         user.setRole("USER");
 
         User savedUser = userRepository.save(user);
-
-        // Tạo giỏ hàng tự động
-        Cart cart = new Cart();
-        cart.setUser(savedUser);
-        cartRepository.save(cart);
 
         UserDetails userDetails = userDetailsService.loadUserByUsername(savedUser.getEmail());
         String accessToken = jwtService.generateAccessToken(userDetails);
@@ -59,24 +56,25 @@ public class AuthenticationService {
     }
 
     public AuthResponse login(LoginRequest request) {
-        if (request == null || request.getEmail() == null || request.getPassword() == null) {
-            throw new IllegalArgumentException("Email and password are required");
+        if (request == null || request.getIdentifier() == null || request.getPassword() == null) {
+            throw new IllegalArgumentException("Identifier and password are required");
         }
 
-        String email = request.getEmail().trim();
+        String identifier = request.getIdentifier().trim();
         String password = request.getPassword();
-        if (email.isBlank() || password.isBlank()) {
-            throw new IllegalArgumentException("Email and password are required");
+        if (identifier.isBlank() || password.isBlank()) {
+            throw new IllegalArgumentException("Identifier and password are required");
         }
 
         authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(email, password)
+                new UsernamePasswordAuthenticationToken(identifier, password)
         );
 
-        User user = userRepository.findByEmail(email)
+        com.nhhoang.synexbackend.entity.User user = userRepository.findByEmail(identifier)
+                .or(() -> userRepository.findByUsername(identifier))
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        UserDetails userDetails = userDetailsService.loadUserByUsername(user.getEmail());
+        UserDetails userDetails = userDetailsService.loadUserByUsername(identifier);
         String accessToken = jwtService.generateAccessToken(userDetails);
         String refreshToken = jwtService.generateRefreshToken(userDetails);
 
@@ -110,6 +108,7 @@ public class AuthenticationService {
         response.setId(user.getId());
         response.setUsername(user.getUsername());
         response.setEmail(user.getEmail());
+        response.setFullName(user.getFullName());
         response.setPhone(user.getPhone());
         response.setRole(user.getRole());
         response.setToken(token);
