@@ -20,17 +20,17 @@ public class MediaService {
     private final ProductRepository productRepository;
     private final ProductImageRepository productImageRepository;
     private final ProductVariantRepository productVariantRepository;
-    private final CloudinaryService cloudinaryService;
+    private final MediaStorageService mediaStorageService;
 
     public Media upload(MultipartFile file, String folder) {
-        CloudinaryUploadResult uploadResult = cloudinaryService.uploadImage(file, folder);
+        MediaUploadResult uploadResult = mediaStorageService.uploadImage(file, folder);
         return mediaRepository.save(new Media(null, uploadResult.url(), uploadResult.publicId()));
     }
 
     public Media resolveFromUrl(String imageUrl) {
-        String publicId = cloudinaryService.extractPublicId(imageUrl);
+        String publicId = mediaStorageService.extractPublicId(imageUrl);
         if (publicId == null || publicId.isBlank()) {
-            throw new IllegalArgumentException("Image URL must be a Cloudinary URL");
+            throw new IllegalArgumentException("Image URL is invalid");
         }
 
         return mediaRepository.findByPublicId(publicId)
@@ -59,7 +59,7 @@ public class MediaService {
             return;
         }
 
-        cloudinaryService.deleteImage(media.getPublicId());
+        mediaStorageService.deleteImage(media.getPublicId());
         mediaRepository.delete(media);
     }
 }

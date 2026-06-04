@@ -2,9 +2,9 @@ package com.nhhoang.synexbackend.service;
 
 import org.springframework.web.multipart.MultipartFile;
 
-public interface CloudinaryService {
+public interface MediaStorageService {
 
-    CloudinaryUploadResult uploadImage(MultipartFile file, String folder);
+    MediaUploadResult uploadImage(MultipartFile file, String folder);
 
     void deleteImage(String publicId);
 

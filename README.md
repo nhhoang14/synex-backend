@@ -11,7 +11,7 @@ Synex Backend is a Spring Boot REST API for an e-commerce application. It covers
 - Spring Security
 - JWT with `jjwt`
 - MySQL
-- Cloudinary
+- Local file storage for media uploads
 - Lombok
 
 ## Main Features
@@ -27,7 +27,7 @@ Synex Backend is a Spring Boot REST API for an e-commerce application. It covers
 
 ## Project Structure
 
-- `src/main/java/com/nhhoang/synexbackend/config` - security, JWT, and Cloudinary configuration
+- `src/main/java/com/nhhoang/synexbackend/config` - security, JWT, and static resource configuration
 - `src/main/java/com/nhhoang/synexbackend/controller` - REST controllers
 - `src/main/java/com/nhhoang/synexbackend/controller/admin` - admin endpoints
 - `src/main/java/com/nhhoang/synexbackend/controller/client` - authenticated user endpoints
@@ -183,7 +183,8 @@ Behavior:
 - `GET /api/admin/reviews` - Moderate reviews
 - `GET /api/admin/contact-messages` - Manage contact messages
 
-Cloudinary upload is supported in the product create/update flow through multipart requests. Send a `product` JSON part and optional image file parts to persist image URLs.
+Product images are uploaded via multipart requests (send a `product` JSON part and optional image file parts).
+Uploaded images are stored on the backend file system under `app.upload.dir` (default: `uploads`) and served through `/uploads/**`.
 
 ## Notes
 
