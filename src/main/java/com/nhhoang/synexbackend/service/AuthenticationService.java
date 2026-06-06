@@ -3,16 +3,26 @@ package com.nhhoang.synexbackend.service;
 import com.nhhoang.synexbackend.dto.request.LoginRequest;
 import com.nhhoang.synexbackend.dto.request.RefreshTokenRequest;
 import com.nhhoang.synexbackend.dto.request.RegisterRequest;
+import com.nhhoang.synexbackend.dto.request.ForgotPasswordRequest;
+import com.nhhoang.synexbackend.dto.request.ResetPasswordRequest;
 import com.nhhoang.synexbackend.dto.response.AuthResponse;
 import com.nhhoang.synexbackend.entity.User;
 import com.nhhoang.synexbackend.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.mail.SimpleMailMessage;
+import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.time.LocalDateTime;
+import java.util.Map;
+import java.util.Random;
+import java.util.concurrent.ConcurrentHashMap;
 
 @Service
 @RequiredArgsConstructor
@@ -23,6 +33,9 @@ public class AuthenticationService {
     private final AuthenticationManager authenticationManager;
     private final UserDetailsService userDetailsService;
     private final JwtService jwtService;
+    private final JavaMailSender mailSender;
+
+    private static final long OTP_EXPIRY_MINUTES = 5; // OTP valid for 5 minutes
 
     public AuthResponse register(RegisterRequest request) {
         if (request == null || request.getEmail() == null || request.getPassword() == null) {
@@ -114,5 +127,78 @@ public class AuthenticationService {
         response.setToken(token);
         response.setRefreshToken(refreshToken);
         return response;
+    }
+
+    @Transactional
+    public void forgotPassword(ForgotPasswordRequest request) {
+        if (request == null || request.getIdentifier() == null || request.getIdentifier().isBlank()) {
+            throw new IllegalArgumentException("Identifier is required");
+        }
+
+        String identifier = request.getIdentifier().trim();
+        User user = userRepository.findByEmail(identifier)
+                .or(() -> userRepository.findByUsername(identifier))
+                .orElseThrow(() -> new RuntimeException("User not found with identifier: " + identifier));
+
+        String otpCode = generateOtp();
+        LocalDateTime expiryTime = LocalDateTime.now().plusMinutes(OTP_EXPIRY_MINUTES);
+
+        user.setOtpCode(otpCode);
+        user.setOtpExpiredAt(expiryTime);
+        userRepository.save(user);
+
+        sendOtpEmail(user.getEmail(), otpCode);
+    }
+
+    @Transactional
+    public void resetPassword(ResetPasswordRequest request) {
+        if (request == null || request.getIdentifier() == null || request.getIdentifier().isBlank()) {
+            throw new IllegalArgumentException("Identifier is required");
+        }
+        if (request.getOtpCode() == null || request.getOtpCode().isBlank()) {
+            throw new IllegalArgumentException("OTP code is required");
+        }
+        if (request.getNewPassword() == null || request.getNewPassword().isBlank()) {
+            throw new IllegalArgumentException("New password is required");
+        }
+
+        String identifier = request.getIdentifier().trim();
+        String providedOtp = request.getOtpCode().trim();
+
+        User user = userRepository.findByEmail(identifier)
+                .or(() -> userRepository.findByUsername(identifier))
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        if (user.getOtpCode() == null || !user.getOtpCode().equals(providedOtp)) {
+            throw new IllegalArgumentException("Invalid OTP code");
+        }
+
+        if (LocalDateTime.now().isAfter(user.getOtpExpiredAt())) {
+            user.setOtpCode(null);
+            user.setOtpExpiredAt(null);
+            userRepository.save(user);
+            throw new IllegalArgumentException("OTP code has expired");
+        }
+
+        user.setPassword(passwordEncoder.encode(request.getNewPassword()));
+
+        user.setOtpCode(null);
+        user.setOtpExpiredAt(null);
+        
+        userRepository.save(user);
+    }
+
+    private String generateOtp() {
+        Random random = new Random();
+        int otp = 100000 + random.nextInt(900000); 
+        return String.valueOf(otp);
+    }
+
+    private void sendOtpEmail(String recipientEmail, String otp) {
+        SimpleMailMessage message = new SimpleMailMessage();
+        message.setTo(recipientEmail);
+        message.setSubject("[Synex Accessories] Your Password Reset OTP");
+        message.setText("Your OTP code is: " + otp + ". It will expire in " + OTP_EXPIRY_MINUTES + " minutes.");
+        mailSender.send(message);
     }
 }

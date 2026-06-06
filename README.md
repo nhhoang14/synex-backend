@@ -82,6 +82,8 @@ All endpoints return JSON. Endpoints marked with 🔐 require authentication.
 - `POST /api/auth/login` - Login
 - `POST /api/auth/logout` - Logout
 - `POST /api/auth/refresh` - Refresh access token
+- `POST /api/auth/forgot-password` - Forgot password
+- `POST /api/auth/reset-password` - Reset password
 
 ### Public Catalog
 

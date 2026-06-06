@@ -3,6 +3,8 @@ package com.nhhoang.synexbackend.controller.client;
 import com.nhhoang.synexbackend.dto.request.LoginRequest;
 import com.nhhoang.synexbackend.dto.request.RefreshTokenRequest;
 import com.nhhoang.synexbackend.dto.request.RegisterRequest;
+import com.nhhoang.synexbackend.dto.request.ResetPasswordRequest;
+import com.nhhoang.synexbackend.dto.request.ForgotPasswordRequest;
 import com.nhhoang.synexbackend.dto.response.AuthResponse;
 import com.nhhoang.synexbackend.service.AuthenticationService;
 import lombok.RequiredArgsConstructor;
@@ -39,5 +41,17 @@ public class AuthController {
     public ResponseEntity<AuthResponse> refresh(@RequestBody RefreshTokenRequest request) {
         AuthResponse response = authenticationService.refreshToken(request);
         return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/forgot-password")
+    public ResponseEntity<String> forgotPassword(@RequestBody ForgotPasswordRequest request) {
+        authenticationService.forgotPassword(request);
+        return ResponseEntity.ok("Password reset instructions sent to your email");
+    }
+
+    @PostMapping("/reset-password")
+    public ResponseEntity<String> resetPassword(@RequestBody ResetPasswordRequest request) {
+        authenticationService.resetPassword(request);
+        return ResponseEntity.ok("Password has been reset successfully");
     }
 }
