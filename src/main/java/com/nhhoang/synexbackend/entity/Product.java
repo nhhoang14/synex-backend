@@ -1,7 +1,6 @@
 package com.nhhoang.synexbackend.entity;
 
 import com.fasterxml.jackson.annotation.JsonManagedReference;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -21,8 +20,6 @@ public class Product {
 
     private String name;
     private String description;
-    private double price;
-    private int stockQuantity;
 
     @ManyToOne
     @JoinColumn(name = "category_id")
@@ -31,11 +28,6 @@ public class Product {
     @ManyToOne
     @JoinColumn(name = "brand_id")
     private Brand brand;
-
-    @OneToOne
-    @JoinColumn(name = "main_media_id")
-    @JsonIgnore
-    private Media mainMedia;
 
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonManagedReference

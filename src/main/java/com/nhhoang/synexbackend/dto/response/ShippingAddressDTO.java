@@ -11,8 +11,7 @@ public class ShippingAddressDTO {
     private String phone;
     private String street;
     private String ward;
-    private String district;
-    private String city;
+    private String province;
     private String notes;
     private boolean isDefault;
 }

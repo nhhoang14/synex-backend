@@ -21,6 +21,7 @@ public class ContactMessage {
     private String email;
     private String phone;
     private String subject;
+    private String imageUrl;
 
     @Column(columnDefinition = "TEXT")
     private String message;

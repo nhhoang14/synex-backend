@@ -33,6 +33,7 @@ public class AdminCategoryController {
         Category existing = categoryRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Category not found"));
         existing.setName(category.getName());
+        existing.setImageUrl(category.getImageUrl());
         return ResponseEntity.ok(categoryRepository.save(existing));
     }
 

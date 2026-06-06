@@ -12,12 +12,6 @@ public class AuthService {
 
     private final UserRepository userRepository;
 
-    /**
-     * Kiểm tra user có phải owner hay admin
-     * @param userId ID của resource owner
-     * @param authentication authentication object từ SecurityContext
-     * @return true nếu user là ADMIN hoặc là chủ sở hữu resource
-     */
     public boolean isOwnerOrAdmin(Long userId, Authentication authentication) {
         if (authentication == null || userId == null) {
             return false;

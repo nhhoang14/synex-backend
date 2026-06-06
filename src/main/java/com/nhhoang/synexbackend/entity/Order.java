@@ -28,8 +28,7 @@ public class Order {
 
     private String shippingStreet;
     private String shippingWard;
-    private String shippingDistrict;
-    private String shippingCity;
+    private String shippingProvince;
 
     private String shippingNotes;
 

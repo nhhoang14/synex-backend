@@ -2,7 +2,6 @@ package com.nhhoang.synexbackend.service;
 
 import com.nhhoang.synexbackend.dto.request.UpdateVariantPriceRequest;
 import com.nhhoang.synexbackend.dto.request.UpsertProductVariantRequest;
-import com.nhhoang.synexbackend.entity.Media;
 import com.nhhoang.synexbackend.entity.Product;
 import com.nhhoang.synexbackend.entity.ProductVariant;
 import com.nhhoang.synexbackend.repository.ProductRepository;
@@ -20,7 +19,6 @@ public class ProductVariantService {
 
     private final ProductRepository productRepository;
     private final ProductVariantRepository productVariantRepository;
-    private final MediaService mediaService;
 
     @Transactional(readOnly = true)
     public List<ProductVariant> getByProductId(Long productId) {
@@ -51,7 +49,6 @@ public class ProductVariantService {
         validateUpsertRequest(request);
 
         ProductVariant variant = findVariant(productId, variantId);
-        Media oldMedia = variant.getMedia();
         String normalizedSku = normalizeSku(request.getSku());
 
         if (productVariantRepository.existsBySkuIgnoreCaseAndIdNot(normalizedSku, variantId)) {
@@ -61,10 +58,7 @@ public class ProductVariantService {
         applyRequest(variant, request);
         variant.setSku(normalizedSku);
 
-        ProductVariant saved = productVariantRepository.saveAndFlush(variant);
-        mediaService.deleteIfUnused(oldMedia);
-
-        return saved;
+        return productVariantRepository.saveAndFlush(variant);
     }
 
     public ProductVariant updatePrice(Long productId, Long variantId, UpdateVariantPriceRequest request) {
@@ -82,13 +76,14 @@ public class ProductVariantService {
     }
 
     public void delete(Long productId, Long variantId) {
+        if (productVariantRepository.findByProductId(productId).size() <= 1) {
+            throw new RuntimeException("Each product must have at least one variant");
+        }
+
         ProductVariant variant = findVariant(productId, variantId);
-        Media media = variant.getMedia();
 
         productVariantRepository.delete(variant);
         productVariantRepository.flush();
-
-        mediaService.deleteIfUnused(media);
     }
 
     private ProductVariant findVariant(Long productId, Long variantId) {
@@ -132,7 +127,7 @@ public class ProductVariantService {
         variant.setActive(request.isActive());
 
         if (request.getImageUrl() != null && !request.getImageUrl().isBlank()) {
-            variant.setMedia(mediaService.resolveFromUrl(request.getImageUrl()));
+            variant.setImageUrl(request.getImageUrl().trim());
         }
     }
 

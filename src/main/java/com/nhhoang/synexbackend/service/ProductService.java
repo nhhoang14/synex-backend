@@ -1,7 +1,6 @@
 package com.nhhoang.synexbackend.service;
 
 import com.nhhoang.synexbackend.entity.Product;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.Optional;
@@ -12,9 +11,9 @@ public interface ProductService {
 
     Optional<Product> getProductById(Long id);
 
-    Product createProduct(Product product, MultipartFile mainImage, MultipartFile[] galleryImages);
+    Product createProduct(Product product);
 
-    Product updateProduct(Long id, Product product, MultipartFile mainImage, MultipartFile[] galleryImages, Long[] deleteImageIds);
+    Product updateProduct(Long id, Product product);
 
     void deleteProduct(Long id);
 }

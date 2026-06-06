@@ -12,5 +12,6 @@ public class ContactMessageRequest {
     private String email;
     private String phone;
     private String subject;
+    private String imageUrl;
     private String message;
 }

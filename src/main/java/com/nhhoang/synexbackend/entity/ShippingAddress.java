@@ -21,8 +21,7 @@ public class ShippingAddress {
 
     private String street;
     private String ward;
-    private String district;
-    private String city;
+    private String province;
 
     private boolean isDefault;
 

@@ -72,20 +72,15 @@ public class OrderService {
 
             ProductVariant variant = resolveOrderVariant(product, cartItem.getVariant());
 
-            double unitPrice = variant != null ? variant.getPrice() : product.getPrice();
-            int availableStock = variant != null ? variant.getStockQuantity() : product.getStockQuantity();
+            double unitPrice = variant.getPrice();
+            int availableStock = variant.getStockQuantity();
 
             if (availableStock < cartItem.getQuantity()) {
                 throw new RuntimeException("Insufficient stock for product: " + product.getName());
             }
 
-            if (variant != null) {
-                variant.setStockQuantity(variant.getStockQuantity() - cartItem.getQuantity());
-                productVariantRepository.save(variant);
-            } else {
-                product.setStockQuantity(product.getStockQuantity() - cartItem.getQuantity());
-                productRepository.save(product);
-            }
+            variant.setStockQuantity(variant.getStockQuantity() - cartItem.getQuantity());
+            productVariantRepository.save(variant);
 
             OrderItem orderItem = new OrderItem();
             orderItem.setOrder(order);
@@ -157,7 +152,7 @@ public class OrderService {
                     .orElseThrow(() -> new RuntimeException("Product not found"));
 
             ProductVariant variant = resolveOrderVariant(product, cartItem.getVariant());
-            int availableStock = variant != null ? variant.getStockQuantity() : product.getStockQuantity();
+            int availableStock = variant.getStockQuantity();
 
             if (availableStock < cartItem.getQuantity()) {
                 throw new RuntimeException("Insufficient stock for product: " + product.getName());
@@ -252,8 +247,7 @@ public class OrderService {
                 order.getShippingPhone(),
                 order.getShippingStreet(),
                 order.getShippingWard(),
-                order.getShippingDistrict(),
-                order.getShippingCity(),
+                order.getShippingProvince(),
                 order.getShippingNotes(),
                 itemResponses
         );
@@ -264,14 +258,23 @@ public class OrderService {
         order.setShippingPhone(shippingAddress.getPhone());
         order.setShippingStreet(shippingAddress.getStreet());
         order.setShippingWard(shippingAddress.getWard());
-        order.setShippingDistrict(shippingAddress.getDistrict());
-        order.setShippingCity(shippingAddress.getCity());
+        order.setShippingProvince(shippingAddress.getProvince());
         order.setShippingNotes(null);
     }
 
     private ProductVariant resolveOrderVariant(Product product, ProductVariant variantFromCart) {
         if (variantFromCart == null) {
-            return null;
+            List<ProductVariant> variants = productVariantRepository.findByProductId(product.getId());
+            if (variants.size() == 1) {
+                ProductVariant onlyVariant = variants.get(0);
+                if (!onlyVariant.isActive()) {
+                    throw new RuntimeException("Selected variant is inactive");
+                }
+
+                return onlyVariant;
+            }
+
+            throw new RuntimeException("Please select a variant for this product");
         }
 
         ProductVariant variant = productVariantRepository.findById(variantFromCart.getId())

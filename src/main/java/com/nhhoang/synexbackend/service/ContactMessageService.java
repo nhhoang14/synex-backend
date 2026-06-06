@@ -38,6 +38,7 @@ public class ContactMessageService {
         message.setEmail(request.getEmail().trim());
         message.setPhone(request.getPhone() == null ? null : request.getPhone().trim());
         message.setSubject(request.getSubject() == null ? null : request.getSubject().trim());
+        message.setImageUrl(request.getImageUrl() == null ? null : request.getImageUrl().trim());
         message.setMessage(request.getMessage().trim());
         message.setStatus("NEW");
 
