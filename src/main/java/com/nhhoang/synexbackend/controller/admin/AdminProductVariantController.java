@@ -32,6 +32,12 @@ public class AdminProductVariantController {
         return ResponseEntity.status(HttpStatus.CREATED).body(productVariantService.create(productId, request));
     }
 
+    @PostMapping("/bulk")
+    public ResponseEntity<List<ProductVariant>> createBulk(@PathVariable Long productId,
+                                                          @RequestBody List<UpsertProductVariantRequest> requests) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(productVariantService.createBulk(productId, requests));
+    }
+
     @PutMapping("/{variantId}")
     public ResponseEntity<ProductVariant> update(@PathVariable Long productId,
                                                  @PathVariable Long variantId,

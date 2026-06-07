@@ -4,6 +4,7 @@ import com.nhhoang.synexbackend.dto.request.UpdateVariantPriceRequest;
 import com.nhhoang.synexbackend.dto.request.UpsertProductVariantRequest;
 import com.nhhoang.synexbackend.entity.Product;
 import com.nhhoang.synexbackend.entity.ProductVariant;
+import com.nhhoang.synexbackend.entity.ProductVariantAttribute;
 import com.nhhoang.synexbackend.repository.ProductRepository;
 import com.nhhoang.synexbackend.repository.ProductVariantRepository;
 import lombok.RequiredArgsConstructor;
@@ -41,8 +42,38 @@ public class ProductVariantService {
         applyRequest(variant, request);
         variant.setSku(normalizedSku);
         variant.setProduct(product);
+        
+        // Gán thuộc tính cho tạo mới
+        addAttributesToVariant(variant, request.getAttributes());
 
         return productVariantRepository.saveAndFlush(variant);
+    }
+
+    // TỐI ƯU BULK: Gom tất cả lại rồi saveAll 1 lần cuối, bỏ saveAndFlush từng vòng lặp
+    public List<ProductVariant> createBulk(Long productId, List<UpsertProductVariantRequest> requests) {
+        if (requests == null || requests.isEmpty()) {
+            throw new IllegalArgumentException("Variant list is empty");
+        }
+
+        Product product = productRepository.findById(productId)
+                .orElseThrow(() -> new RuntimeException("Product not found"));
+
+        List<ProductVariant> variantsToSave = requests.stream().map(req -> {
+            validateUpsertRequest(req);
+            String normalizedSku = normalizeSku(req.getSku());
+            if (productVariantRepository.existsBySkuIgnoreCase(normalizedSku)) {
+                throw new RuntimeException("SKU " + normalizedSku + " already exists");
+            }
+
+            ProductVariant variant = new ProductVariant();
+            applyRequest(variant, req);
+            variant.setSku(normalizedSku);
+            variant.setProduct(product);
+            addAttributesToVariant(variant, req.getAttributes());
+            return variant;
+        }).toList();
+
+        return productVariantRepository.saveAllAndFlush(variantsToSave);
     }
 
     public ProductVariant update(Long productId, Long variantId, UpsertProductVariantRequest request) {
@@ -57,6 +88,12 @@ public class ProductVariantService {
 
         applyRequest(variant, request);
         variant.setSku(normalizedSku);
+
+        // Xử lý cập nhật attribute an toàn cho Hibernate
+        if (request.getAttributes() != null) {
+            variant.getAttributes().clear();
+            addAttributesToVariant(variant, request.getAttributes());
+        }
 
         return productVariantRepository.saveAndFlush(variant);
     }
@@ -81,7 +118,6 @@ public class ProductVariantService {
         }
 
         ProductVariant variant = findVariant(productId, variantId);
-
         productVariantRepository.delete(variant);
         productVariantRepository.flush();
     }
@@ -128,6 +164,19 @@ public class ProductVariantService {
 
         if (request.getImageUrl() != null && !request.getImageUrl().isBlank()) {
             variant.setImageUrl(request.getImageUrl().trim());
+        }
+    }
+
+    // Tách hàm xử lý mapping attribute riêng biệt để tái sử dụng sạch sẽ hơn
+    private void addAttributesToVariant(ProductVariant variant, List<UpsertProductVariantRequest.VariantAttributeRequest> attributeRequests) {
+        if (attributeRequests == null) return;
+        
+        for (UpsertProductVariantRequest.VariantAttributeRequest attrReq : attributeRequests) {
+            ProductVariantAttribute attr = new ProductVariantAttribute();
+            attr.setAttributeName(attrReq.getAttributeName());
+            attr.setAttributeValue(attrReq.getAttributeValue());
+            attr.setVariant(variant);
+            variant.getAttributes().add(attr);
         }
     }
 
