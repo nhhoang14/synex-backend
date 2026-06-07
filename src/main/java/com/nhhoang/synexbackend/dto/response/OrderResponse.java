@@ -14,6 +14,7 @@ public class OrderResponse {
     private Long id;
     private Long userId;
     private double totalAmount;
+    private String orderCode;
     private String status;
     private String paymentMethod;
     private LocalDateTime createdAt;

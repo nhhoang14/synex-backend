@@ -7,9 +7,11 @@ import com.nhhoang.synexbackend.entity.*;
 import com.nhhoang.synexbackend.repository.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.ArrayList;
 import java.util.List;
@@ -95,6 +97,7 @@ public class OrderService {
 
         order.setTotalAmount(totalAmount);
         order = orderRepository.save(order);
+        order.setOrderCode("DH" + order.getId());
         order.setItems(savedItems);
 
         Payment payment = new Payment();
@@ -105,7 +108,7 @@ public class OrderService {
 
         cartItemRepository.deleteAll(selectedItems);
 
-        return mapToResponse(order, savedItems);
+        return mapToResponse(order);
     }
 
     public void validateSelectedItemsStock(CreateOrderRequest request) {
@@ -222,24 +225,23 @@ public class OrderService {
     }
 
     private OrderResponse mapToResponse(Order order) {
-        return mapToResponse(order, order.getItems() == null ? Collections.emptyList() : order.getItems());
-    }
-
-    private OrderResponse mapToResponse(Order order, List<OrderItem> items) {
-        List<OrderItemResponse> itemResponses = items.stream()
-                .map(item -> new OrderItemResponse(
-                        item.getProduct().getId(),
-                buildOrderItemName(item),
-                        item.getQuantity(),
-                        item.getPrice(),
-                        item.getPrice() * item.getQuantity()
-                ))
-                .toList();
+        List<OrderItemResponse> itemResponses = (order.getItems() == null)
+                ? Collections.emptyList()
+                : order.getItems().stream()
+                    .map(item -> new OrderItemResponse(
+                            item.getProduct().getId(),
+                            buildOrderItemName(item),
+                            item.getQuantity(),
+                            item.getPrice(),
+                            item.getPrice() * item.getQuantity()
+                    ))
+                    .toList();
 
         return new OrderResponse(
                 order.getId(),
                 order.getUser() == null ? null : order.getUser().getId(),
                 order.getTotalAmount(),
+                order.getOrderCode(),
                 order.getStatus(),
                 order.getPaymentMethod(),
                 order.getCreatedAt(),
@@ -302,5 +304,61 @@ public class OrderService {
         }
 
         return item.getProduct().getName() + " [" + sku + "]";
+    }
+
+    @Transactional
+    public void processOrderPaymentViaWebhook(String sepayContent, Double amount) {
+        String orderCode = sepayContent.trim().toUpperCase();
+
+        Order order = orderRepository.findByOrderCode(orderCode)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy đơn hàng với mã: " + orderCode));
+
+        if (!"PENDING".equals(order.getStatus())) {
+            System.out.println("-> [SePay] Đơn hàng " + orderCode + " đang ở trạng thái [" + order.getStatus() + "], bỏ qua không xử lý.");
+            return;
+        }
+
+        if (Math.abs(order.getTotalAmount() - amount) < 1.0) {
+            order.setStatus("SHIPPING"); 
+            orderRepository.save(order);
+            
+            Payment payment = paymentRepository.findByOrderId(order.getId())
+                    .orElseThrow(() -> new RuntimeException("Không tìm thấy Payment cho đơn hàng ID: " + order.getId()));
+            
+            payment.setStatus("COMPLETED");
+            paymentRepository.save(payment);
+
+            System.out.println("-> [SePay Webhook] Đơn hàng " + orderCode + " đã trả đủ tiền. Tự động chuyển sang ĐANG GIAO!");
+        } else {
+            System.err.println("-> [SePay Webhook] Sai tiền! Đơn " + orderCode + " cần " + order.getTotalAmount() + " nhưng nhận " + amount);
+            throw new RuntimeException("Payment amount mismatch");
+        }
+    }
+
+    @Scheduled(fixedRate = 60000)
+    @Transactional
+    public void cancelExpiredCardOrders() {
+        LocalDateTime threshold = LocalDateTime.now().minusMinutes(20);
+        List<Order> expiredOrders = orderRepository.findByPaymentMethodAndStatusAndCreatedAtBefore("CARD", "PENDING", threshold);
+
+        for (Order order : expiredOrders) {
+            order.setStatus("CANCELLED");
+            
+            if (order.getItems() != null) {
+                for (OrderItem item : order.getItems()) {
+                    ProductVariant variant = item.getVariant();
+                    variant.setStockQuantity(variant.getStockQuantity() + item.getQuantity());
+                    productVariantRepository.save(variant);
+                }
+            }
+            orderRepository.save(order);
+            
+            paymentRepository.findByOrderId(order.getId()).ifPresent(payment -> {
+                payment.setStatus("CANCELLED");
+                paymentRepository.save(payment);
+            });
+
+            System.out.println("-> [Hệ thống] Đã hủy đơn hàng quá hạn thanh toán CARD: " + order.getOrderCode());
+        }
     }
 }

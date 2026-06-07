@@ -19,6 +19,7 @@ public class Order {
     private Long id;
 
     private double totalAmount;
+    private String orderCode;
     private String status;
     private String paymentMethod;
 
