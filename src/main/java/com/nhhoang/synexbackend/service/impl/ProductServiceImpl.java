@@ -35,6 +35,18 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
+    @Transactional(readOnly = true)
+    public List<Product> getActiveProducts() {
+        return productRepository.findByActiveTrue();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Optional<Product> getActiveProductById(Long id) {
+        return productRepository.findByIdAndActiveTrue(id);
+    }
+
+    @Override
     public Product createProduct(Product product) {
         syncAssociations(product);
         Product saved = productRepository.saveAndFlush(product);
@@ -51,6 +63,7 @@ public class ProductServiceImpl implements ProductService {
         existing.setDescription(product.getDescription());
         existing.setCategory(product.getCategory());
         existing.setBrand(product.getBrand());
+        existing.setActive(product.isActive());
         existing.setImages(product.getImages());
         existing.setVariants(product.getVariants());
 

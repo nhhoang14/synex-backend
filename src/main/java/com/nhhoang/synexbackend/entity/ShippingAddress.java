@@ -19,10 +19,7 @@ public class ShippingAddress {
     private String fullName;
     private String phone;
 
-    private String street;
-    private String ward;
-    private String province;
-
+    private String address;
     private boolean isDefault;
 
     @ManyToOne

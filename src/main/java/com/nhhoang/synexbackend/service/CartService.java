@@ -39,7 +39,7 @@ public class CartService {
         ProductVariant variant = resolveVariant(product, variantId);
 
         CartItem item = findCartItem(currentUser.getId(), productId, variantId)
-                .orElseGet(() -> createCartItem(currentUser.getId(), product, variant));
+                .orElseGet(() -> createCartItem(currentUser, product, variant));
 
         int updatedQuantity = item.getQuantity() + quantity;
         if (getAvailableStock(variant) < updatedQuantity) {
@@ -61,11 +61,7 @@ public class CartService {
         Product product = productRepository.findById(productId)
                 .orElseThrow(() -> new RuntimeException("Product not found"));
         ProductVariant variant = resolveVariant(product, variantId);
-        if (variantId != null) {
-            cartItemRepository.deleteByUserIdAndProductIdAndVariantId(userId, productId, variant.getId());
-            return;
-        }
-
+        
         cartItemRepository.deleteByUserIdAndProductIdAndVariantId(userId, productId, variant.getId());
     }
 
@@ -118,9 +114,9 @@ public class CartService {
         return cartItemRepository.findByUserIdAndProductIdAndVariantId(userId, productId, variantId);
     }
 
-    private CartItem createCartItem(Long userId, Product product, ProductVariant variant) {
+    private CartItem createCartItem(User user, Product product, ProductVariant variant) {
         CartItem newItem = new CartItem();
-        newItem.setUserId(userId);
+        newItem.setUser(user);
         newItem.setProduct(product);
         newItem.setVariant(variant);
         newItem.setQuantity(0);
@@ -139,6 +135,10 @@ public class CartService {
             }
 
             throw new RuntimeException("Please select a variant for this product");
+        }
+
+        if (!product.isActive()) {
+            throw new RuntimeException("This product is no longer available for purchase");
         }
 
         ProductVariant variant = productVariantRepository.findById(variantId)

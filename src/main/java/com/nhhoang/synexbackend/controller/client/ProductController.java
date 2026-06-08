@@ -18,13 +18,12 @@ public class ProductController {
 
     @GetMapping
     public List<Product> getAll() {
-        return productService.getAllProducts();
+        return productService.getActiveProducts();
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<Product> getById(@PathVariable Long id) {
-
-        return productService.getProductById(id)
+        return productService.getActiveProductById(id)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
 

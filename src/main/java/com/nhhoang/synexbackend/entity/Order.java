@@ -27,10 +27,7 @@ public class Order {
     private String shippingFullName;
     private String shippingPhone;
 
-    private String shippingStreet;
-    private String shippingWard;
-    private String shippingProvince;
-
+    private String shippingAddress;
     private String shippingNotes;
 
     private LocalDateTime createdAt;

@@ -247,9 +247,7 @@ public class OrderService {
                 order.getCreatedAt(),
                 order.getShippingFullName(),
                 order.getShippingPhone(),
-                order.getShippingStreet(),
-                order.getShippingWard(),
-                order.getShippingProvince(),
+                order.getShippingAddress(),
                 order.getShippingNotes(),
                 itemResponses
         );
@@ -258,10 +256,7 @@ public class OrderService {
     private void copyShippingSnapshot(Order order, ShippingAddress shippingAddress) {
         order.setShippingFullName(shippingAddress.getFullName());
         order.setShippingPhone(shippingAddress.getPhone());
-        order.setShippingStreet(shippingAddress.getStreet());
-        order.setShippingWard(shippingAddress.getWard());
-        order.setShippingProvince(shippingAddress.getProvince());
-        order.setShippingNotes(null);
+        order.setShippingAddress(shippingAddress.getAddress());
     }
 
     private ProductVariant resolveOrderVariant(Product product, ProductVariant variantFromCart) {

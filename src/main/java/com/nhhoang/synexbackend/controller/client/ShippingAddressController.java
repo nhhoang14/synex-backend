@@ -69,9 +69,7 @@ public class ShippingAddressController {
         ShippingAddress address = new ShippingAddress();
         address.setFullName(request.getFullName());
         address.setPhone(request.getPhone());
-        address.setStreet(request.getStreet());
-        address.setWard(request.getWard());
-        address.setProvince(request.getProvince());
+        address.setAddress(request.getAddress());
         address.setDefault(Boolean.TRUE.equals(request.getDefaultAddress()));
         return address;
     }

@@ -20,9 +20,7 @@ public class OrderResponse {
     private LocalDateTime createdAt;
     private String shippingFullName;
     private String shippingPhone;
-    private String shippingStreet;
-    private String shippingWard;
-    private String shippingProvince;
+    private String shippingAddress;
     private String shippingNotes;
     private List<OrderItemResponse> items;
 }
