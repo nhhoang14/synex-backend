@@ -29,6 +29,7 @@ public class User {
     private String phone;
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private String password;
+    private boolean activated;
     private String role;
     private String otpCode;
     private LocalDateTime otpExpiredAt;

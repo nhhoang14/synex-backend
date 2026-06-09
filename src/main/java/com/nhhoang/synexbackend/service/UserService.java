@@ -126,6 +126,20 @@ public class UserService {
     }
 
     /**
+     * Update user activation status (Lock/Unlock)
+     */
+    @Transactional
+    public UserDTO updateUserActivationStatus(Long id, boolean activated) {
+        if (id == null || id <= 0) {
+            throw new IllegalArgumentException("Invalid user ID");
+        }
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        user.setActivated(activated);
+        return mapToUserDTO(userRepository.save(user));
+    }
+
+    /**
      * Delete user (only ADMIN can call this)
      */
     @Transactional

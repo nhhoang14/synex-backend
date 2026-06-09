@@ -56,6 +56,7 @@ public class AuthenticationService {
         user.setFullName(request.getFullName());
         user.setPhone(request.getPhone());
         user.setRole("USER");
+        user.setActivated(true);
 
         User savedUser = userRepository.save(user);
 

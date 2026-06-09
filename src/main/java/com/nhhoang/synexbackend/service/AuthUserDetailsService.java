@@ -25,6 +25,7 @@ public class AuthUserDetailsService implements UserDetailsService {
         return User.withUsername(appUser.getEmail())
                 .password(appUser.getPassword())
                 .roles(normalizedRole)
+                .disabled(!appUser.isActivated())
                 .build();
     }
 
