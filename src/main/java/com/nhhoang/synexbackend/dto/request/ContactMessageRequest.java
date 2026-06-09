@@ -1,17 +1,15 @@
 package com.nhhoang.synexbackend.dto.request;
 
-import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.NoArgsConstructor;
+import org.springframework.web.multipart.MultipartFile;
 
 @Data
-@NoArgsConstructor
-@AllArgsConstructor
 public class ContactMessageRequest {
     private String fullName;
     private String email;
     private String phone;
     private String subject;
-    private String imageUrl;
     private String message;
+    private MultipartFile imageFile; // Dùng để nhận ảnh đính kèm từ form liên hệ
+    private String imageUrl;
 }

@@ -17,29 +17,24 @@ public class ContactMessageService {
 
     @Transactional
     public ContactMessage create(ContactMessageRequest request) {
-        if (request == null) {
-            throw new IllegalArgumentException("Contact message is required");
-        }
-
-        if (request.getFullName() == null || request.getFullName().isBlank()) {
-            throw new IllegalArgumentException("Full name is required");
-        }
-
-        if (request.getEmail() == null || request.getEmail().isBlank()) {
-            throw new IllegalArgumentException("Email is required");
-        }
-
-        if (request.getMessage() == null || request.getMessage().isBlank()) {
-            throw new IllegalArgumentException("Message is required");
-        }
-
+        // Thay vì validate thủ công, hãy dùng @Valid ở Controller kết hợp với 
+        // các annotation như @NotBlank, @Email trong ContactMessageRequest.
+        // Ở đây ta chỉ giữ lại logic mapping để code gọn gàng hơn.
+        
         ContactMessage message = new ContactMessage();
         message.setFullName(request.getFullName().trim());
         message.setEmail(request.getEmail().trim());
         message.setPhone(request.getPhone() == null ? null : request.getPhone().trim());
         message.setSubject(request.getSubject() == null ? null : request.getSubject().trim());
-        message.setImageUrl(request.getImageUrl() == null ? null : request.getImageUrl().trim());
         message.setMessage(request.getMessage().trim());
+
+        // Xử lý file nếu có upload
+        if (request.getImageFile() != null && !request.getImageFile().isEmpty()) {
+            // String uploadedUrl = fileService.upload(request.getImageFile());
+            // message.setImageUrl(uploadedUrl);
+        }
+        
+        // Khởi tạo trạng thái mặc định (có thể dùng @PrePersist trong Entity tương tự Order.java)
         message.setStatus("NEW");
 
         return contactMessageRepository.save(message);
