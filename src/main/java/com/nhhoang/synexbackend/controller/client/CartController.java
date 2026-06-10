@@ -18,11 +18,10 @@ public class CartController {
 
     @PostMapping("/add")
     @PreAuthorize("isAuthenticated()")
-    public CartItem addToCart(@RequestParam Long productId,
-                              @RequestParam(required = false) Long variantId,
+    public CartItem addToCart(@RequestParam(required = false) Long variantId,
                               @RequestParam int quantity) {
 
-        return cartService.addToCart(productId, variantId, quantity);
+        return cartService.addToCart(variantId, quantity);
     }
 
     @GetMapping("/me")
@@ -33,24 +32,21 @@ public class CartController {
 
     @PatchMapping("/items/{productId}/increase")
     @PreAuthorize("isAuthenticated()")
-    public CartItem increaseItemQuantity(@PathVariable Long productId,
-                                         @RequestParam(required = false) Long variantId,
+    public CartItem increaseItemQuantity(@RequestParam Long variantId,
                                          @RequestParam(defaultValue = "1") int amount) {
-        return cartService.increaseItemQuantity(productId, variantId, amount);
+        return cartService.increaseItemQuantity(variantId, amount);
     }
 
     @PatchMapping("/items/{productId}/decrease")
     @PreAuthorize("isAuthenticated()")
-    public CartItem decreaseItemQuantity(@PathVariable Long productId,
-                                         @RequestParam(required = false) Long variantId,
+    public CartItem decreaseItemQuantity(@RequestParam Long variantId,
                                          @RequestParam(defaultValue = "1") int amount) {
-        return cartService.decreaseItemQuantity(productId, variantId, amount);
+        return cartService.decreaseItemQuantity(variantId, amount);
     }
 
     @DeleteMapping("/items/{productId}")
     @PreAuthorize("isAuthenticated()")
-    public void removeFromCart(@PathVariable Long productId,
-                               @RequestParam(required = false) Long variantId) {
-        cartService.removeFromCart(productId, variantId);
+    public void removeFromCart(@RequestParam Long variantId) {
+        cartService.removeFromCart(variantId);
     }
 }

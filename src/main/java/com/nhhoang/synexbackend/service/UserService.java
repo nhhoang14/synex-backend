@@ -19,13 +19,6 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
-    private final CartItemRepository cartItemRepository;
-    private final ShippingAddressRepository shippingAddressRepository;
-    private final OrderItemRepository orderItemRepository;
-    private final PaymentRepository paymentRepository;
-    private final OrderRepository orderRepository;
-    private final ReviewRepository reviewRepository;
-    private final WishlistRepository wishlistRepository;
 
     public List<UserDTO> getAllUsers() {
         return userRepository.findAll().stream().map(this::mapToUserDTO).toList();
@@ -137,32 +130,6 @@ public class UserService {
                 .orElseThrow(() -> new RuntimeException("User not found"));
         user.setActivated(activated);
         return mapToUserDTO(userRepository.save(user));
-    }
-
-    /**
-     * Delete user (only ADMIN can call this)
-     */
-    @Transactional
-    public void deleteUser(Long id) {
-        if (id == null || id <= 0) {
-            throw new IllegalArgumentException("Invalid user ID");
-        }
-
-        User user = userRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("User not found"));
-
-        orderRepository.findByUserIdOrderByCreatedAtDesc(user.getId()).forEach(order -> {
-            paymentRepository.deleteByOrderId(order.getId());
-            orderItemRepository.deleteByOrderId(order.getId());
-        });
-
-        reviewRepository.deleteByUserId(user.getId());
-        wishlistRepository.deleteByUserId(user.getId());
-        shippingAddressRepository.deleteByUserId(user.getId());
-
-        cartItemRepository.deleteByUserId(user.getId());
-        
-        userRepository.delete(user);
     }
 
     private String normalizeRole(String role) {

@@ -34,9 +34,8 @@ public class AdminUserController {
         return ResponseEntity.ok(userService.updateUserRole(id, request.getRole()));
     }
 
-    @DeleteMapping("/{id}")
-    public ResponseEntity<String> deleteUser(@PathVariable Long id) {
-        userService.deleteUser(id);
-        return ResponseEntity.ok("User deleted successfully");
+    @PatchMapping("/{id}/activate")
+    public ResponseEntity<UserDTO> updateUserActivationStatus(@PathVariable Long id, @RequestParam boolean activated) {
+        return ResponseEntity.ok(userService.updateUserActivationStatus(id, activated));
     }
 }

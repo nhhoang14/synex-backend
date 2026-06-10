@@ -14,7 +14,9 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -25,11 +27,9 @@ public class OrderService {
 
     private final OrderRepository orderRepository;
     private final OrderItemRepository orderItemRepository;
-    private final PaymentRepository paymentRepository;
     private final CartItemRepository cartItemRepository;
     private final ShippingAddressRepository shippingAddressRepository;
     private final UserRepository userRepository;
-    private final ProductRepository productRepository;
     private final ProductVariantRepository productVariantRepository;
 
     private User getCurrentUser() {
@@ -57,7 +57,9 @@ public class OrderService {
 
         Order order = new Order();
         order.setUser(currentUser);
-        copyShippingSnapshot(order, shippingAddress);
+        order.setShippingFullName(shippingAddress.getFullName());
+        order.setShippingPhone(shippingAddress.getPhone());
+        order.setShippingAddress(shippingAddress.getAddress());
         order.setStatus("PENDING");
         order.setPaymentMethod(request.getPaymentMethod() == null || request.getPaymentMethod().isBlank()
                 ? "COD"
@@ -69,16 +71,13 @@ public class OrderService {
         order = orderRepository.save(order);
 
         for (CartItem cartItem : selectedItems) {
-            Product product = productRepository.findById(cartItem.getProduct().getId())
-                    .orElseThrow(() -> new RuntimeException("Product not found"));
-
-            ProductVariant variant = resolveOrderVariant(product, cartItem.getVariant());
+            ProductVariant variant = resolveOrderVariant(cartItem.getVariant());
 
             double unitPrice = variant.getPrice();
             int availableStock = variant.getStockQuantity();
 
             if (availableStock < cartItem.getQuantity()) {
-                throw new RuntimeException("Insufficient stock for product: " + product.getName());
+                throw new RuntimeException("Insufficient stock for product: " + variant.getProduct().getName());
             }
 
             variant.setStockQuantity(variant.getStockQuantity() - cartItem.getQuantity());
@@ -86,7 +85,6 @@ public class OrderService {
 
             OrderItem orderItem = new OrderItem();
             orderItem.setOrder(order);
-            orderItem.setProduct(product);
             orderItem.setVariant(variant);
             orderItem.setQuantity(cartItem.getQuantity());
             orderItem.setPrice(unitPrice);
@@ -99,12 +97,6 @@ public class OrderService {
         order = orderRepository.save(order);
         order.setOrderCode("DH" + order.getId());
         order.setItems(savedItems);
-
-        Payment payment = new Payment();
-        payment.setOrder(order);
-        payment.setMethod(order.getPaymentMethod());
-        payment.setStatus("PENDING");
-        paymentRepository.save(payment);
 
         cartItemRepository.deleteAll(selectedItems);
 
@@ -151,14 +143,11 @@ public class OrderService {
 
     private void validateStockAvailability(List<CartItem> cartItems) {
         for (CartItem cartItem : cartItems) {
-            Product product = productRepository.findById(cartItem.getProduct().getId())
-                    .orElseThrow(() -> new RuntimeException("Product not found"));
-
-            ProductVariant variant = resolveOrderVariant(product, cartItem.getVariant());
+            ProductVariant variant = resolveOrderVariant(cartItem.getVariant());
             int availableStock = variant.getStockQuantity();
 
             if (availableStock < cartItem.getQuantity()) {
-                throw new RuntimeException("Insufficient stock for product: " + product.getName());
+                throw new RuntimeException("Insufficient stock for product: " + variant.getProduct().getName());
             }
         }
     }
@@ -224,12 +213,26 @@ public class OrderService {
         return mapToResponse(orderRepository.save(order));
     }
 
+    // @Transactional(readOnly = true)
+    // public Map<String, Double> getRevenueStatistics(LocalDateTime start, LocalDateTime end) {
+    //     // Giả sử repository có phương thức tìm đơn hàng trong khoảng thời gian và không bị hủy
+    //     List<Order> orders = orderRepository.findByStatusNotAndCreatedAtBetween("CANCELLED", start, end);
+
+    //     // Nhóm doanh thu theo ngày (YYYY-MM-DD)
+    //     return orders.stream()
+    //             .collect(Collectors.groupingBy(
+    //                     o -> o.getCreatedAt().toLocalDate().toString(),
+    //                     LinkedHashMap::new,
+    //                     Collectors.summingDouble(Order::getTotalAmount)
+    //             ));
+    // }
+
     private OrderResponse mapToResponse(Order order) {
         List<OrderItemResponse> itemResponses = (order.getItems() == null)
                 ? Collections.emptyList()
                 : order.getItems().stream()
                     .map(item -> new OrderItemResponse(
-                            item.getProduct().getId(),
+                            (item.getVariant() != null && item.getVariant().getProduct() != null) ? item.getVariant().getProduct().getId() : null,
                             buildOrderItemName(item),
                             item.getQuantity(),
                             item.getPrice(),
@@ -253,52 +256,31 @@ public class OrderService {
         );
     }
 
-    private void copyShippingSnapshot(Order order, ShippingAddress shippingAddress) {
-        order.setShippingFullName(shippingAddress.getFullName());
-        order.setShippingPhone(shippingAddress.getPhone());
-        order.setShippingAddress(shippingAddress.getAddress());
-    }
-
-    private ProductVariant resolveOrderVariant(Product product, ProductVariant variantFromCart) {
+    private ProductVariant resolveOrderVariant(ProductVariant variantFromCart) {
         if (variantFromCart == null) {
-            List<ProductVariant> variants = productVariantRepository.findByProductId(product.getId());
-            if (variants.size() == 1) {
-                ProductVariant onlyVariant = variants.get(0);
-                if (!onlyVariant.isActive()) {
-                    throw new RuntimeException("Selected variant is inactive");
-                }
-
-                return onlyVariant;
-            }
-
-            throw new RuntimeException("Please select a variant for this product");
+            throw new IllegalArgumentException("Variant must not be null");
         }
-
         ProductVariant variant = productVariantRepository.findById(variantFromCart.getId())
                 .orElseThrow(() -> new RuntimeException("Product variant not found"));
-
-        if (!variant.getProduct().getId().equals(product.getId())) {
-            throw new RuntimeException("Variant does not belong to selected product");
-        }
 
         if (!variant.isActive()) {
             throw new RuntimeException("Selected variant is inactive");
         }
 
+        if (variant.getProduct() == null || !variant.getProduct().isActive()) {
+            throw new RuntimeException("This product is no longer available for purchase");
+        }
         return variant;
     }
 
     private String buildOrderItemName(OrderItem item) {
-        if (item.getVariant() == null) {
-            return item.getProduct().getName();
+        if (item.getVariant() == null || item.getVariant().getProduct() == null) {
+            return "Unknown Product";
         }
 
+        String productName = item.getVariant().getProduct().getName();
         String sku = item.getVariant().getSku();
-        if (sku == null || sku.isBlank()) {
-            return item.getProduct().getName();
-        }
-
-        return item.getProduct().getName() + " [" + sku + "]";
+        return (sku == null || sku.isBlank()) ? productName : productName + " [" + sku + "]";
     }
 
     @Transactional
@@ -316,13 +298,6 @@ public class OrderService {
         if (Math.abs(order.getTotalAmount() - amount) < 1.0) {
             order.setStatus("SHIPPING"); 
             orderRepository.save(order);
-            
-            Payment payment = paymentRepository.findByOrderId(order.getId())
-                    .orElseThrow(() -> new RuntimeException("Không tìm thấy Payment cho đơn hàng ID: " + order.getId()));
-            
-            payment.setStatus("COMPLETED");
-            paymentRepository.save(payment);
-
             System.out.println("-> [SePay Webhook] Đơn hàng " + orderCode + " đã trả đủ tiền. Tự động chuyển sang ĐANG GIAO!");
         } else {
             System.err.println("-> [SePay Webhook] Sai tiền! Đơn " + orderCode + " cần " + order.getTotalAmount() + " nhưng nhận " + amount);
@@ -347,12 +322,6 @@ public class OrderService {
                 }
             }
             orderRepository.save(order);
-            
-            paymentRepository.findByOrderId(order.getId()).ifPresent(payment -> {
-                payment.setStatus("CANCELLED");
-                paymentRepository.save(payment);
-            });
-
             System.out.println("-> [Hệ thống] Đã hủy đơn hàng quá hạn thanh toán CARD: " + order.getOrderCode());
         }
     }

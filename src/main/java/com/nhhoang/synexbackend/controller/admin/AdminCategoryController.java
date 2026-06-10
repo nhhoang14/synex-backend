@@ -2,6 +2,7 @@ package com.nhhoang.synexbackend.controller.admin;
 
 import com.nhhoang.synexbackend.dto.request.CategoryRequest;
 import com.nhhoang.synexbackend.entity.Category;
+import com.nhhoang.synexbackend.service.LocalImageUploadService;
 import com.nhhoang.synexbackend.repository.CategoryRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
@@ -19,6 +20,7 @@ import java.util.List;
 public class AdminCategoryController {
 
     private final CategoryRepository categoryRepository;
+     private final LocalImageUploadService fileService; 
 
     @GetMapping
     public ResponseEntity<List<Category>> getAll() {
@@ -29,8 +31,7 @@ public class AdminCategoryController {
     public ResponseEntity<Category> create(@ModelAttribute CategoryRequest request) {
         Category category = new Category();
         category.setName(request.getName());
-        // Logic: Upload request.getImageFile() lên Cloudinary/S3 và setImageUrl
-        // category.setImageUrl(fileService.upload(request.getImageFile()));
+        category.setImageUrl(fileService.upload(request.getImageFile()));
         return ResponseEntity.ok(categoryRepository.save(category));
     }
 
@@ -40,8 +41,7 @@ public class AdminCategoryController {
                 .orElseThrow(() -> new RuntimeException("Category not found"));
         existing.setName(request.getName());
         if (request.getImageFile() != null && !request.getImageFile().isEmpty()) {
-             // Logic: Upload ảnh mới và cập nhật URL
-             // existing.setImageUrl(fileService.upload(request.getImageFile()));
+            existing.setImageUrl(fileService.upload(request.getImageFile()));
         }
         return ResponseEntity.ok(categoryRepository.save(existing));
     }

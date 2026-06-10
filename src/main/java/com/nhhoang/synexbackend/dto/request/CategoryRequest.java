@@ -7,6 +7,6 @@ import org.springframework.web.multipart.MultipartFile;
 public class CategoryRequest {
     private Long id;
     private String name;
-    private MultipartFile imageFile; // Nhận file từ FE
-    private String imageUrl; // Để giữ lại URL cũ nếu không upload ảnh mới
+    private MultipartFile imageFile;
+    private String imageUrl;
 }
