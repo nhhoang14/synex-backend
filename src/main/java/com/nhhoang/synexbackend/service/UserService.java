@@ -20,19 +20,20 @@ public class UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
 
+
+    @Transactional(readOnly = true)
     public List<UserDTO> getAllUsers() {
         return userRepository.findAll().stream().map(this::mapToUserDTO).toList();
     }
 
+    @Transactional(readOnly = true)
     public UserDTO getUserById(Long id) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("User not found"));
         return mapToUserDTO(user);
     }
 
-    /**
-     * Lấy profile hiện tại của user đang login
-     */
+    @Transactional(readOnly = true)
     public UserDTO getCurrentUserProfile() {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
         User user = userRepository.findByEmail(email)
@@ -40,9 +41,7 @@ public class UserService {
         return mapToUserDTO(user);
     }
 
-    /**
-     * Update profile của user hiện tại
-     */
+    @Transactional
     public UserDTO updateUserProfile(UpdateUserRequest request) {
         if (request == null) {
             throw new IllegalArgumentException("UpdateUserRequest cannot be null");
@@ -52,16 +51,15 @@ public class UserService {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        // Update username nếu có
         if (request.getUsername() != null && !request.getUsername().trim().isEmpty()) {
             String newUsername = request.getUsername().trim();
-            if (!newUsername.equals(user.getUsername()) && userRepository.findByUsername(newUsername).isPresent()) {
+            if (!newUsername.equals(user.getUsername()) && 
+                userRepository.findByUsername(newUsername).isPresent()) {
                 throw new RuntimeException("Username already in use");
             }
             user.setUsername(newUsername);
         }
 
-        // Update email nếu có
         if (request.getEmail() != null && !request.getEmail().trim().isEmpty()) {
             String newEmail = request.getEmail().trim();
             if (!newEmail.equals(user.getEmail()) && 
@@ -71,12 +69,10 @@ public class UserService {
             user.setEmail(newEmail);
         }
 
-        // Update fullName nếu có
         if (request.getFullName() != null && !request.getFullName().trim().isEmpty()) {
             user.setFullName(request.getFullName().trim());
         }
 
-        // Update phone nếu có
         if (request.getPhone() != null && !request.getPhone().trim().isEmpty()) {
             user.setPhone(request.getPhone().trim());
         }
@@ -85,6 +81,7 @@ public class UserService {
         return mapToUserDTO(updatedUser);
     }
 
+    @Transactional
     public void changePassword(ChangePasswordRequest request) {
         if (request == null || request.getCurrentPassword() == null || request.getNewPassword() == null) {
             throw new IllegalArgumentException("Current password and new password are required");
@@ -118,9 +115,6 @@ public class UserService {
         return mapToUserDTO(userRepository.save(user));
     }
 
-    /**
-     * Update user activation status (Lock/Unlock)
-     */
     @Transactional
     public UserDTO updateUserActivationStatus(Long id, boolean activated) {
         if (id == null || id <= 0) {
@@ -144,9 +138,6 @@ public class UserService {
         return trimmedRole;
     }
 
-    /**
-     * Map User entity to UserDTO
-     */
     private UserDTO mapToUserDTO(User user) {
         UserDTO dto = new UserDTO();
         dto.setId(user.getId());
