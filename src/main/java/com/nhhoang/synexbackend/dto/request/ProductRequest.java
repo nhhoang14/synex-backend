@@ -6,14 +6,16 @@ import java.util.List;
 
 @Data
 public class ProductRequest {
+    private Long id;
     private String name;
     private String description;
-    private Long categoryId;
-    private Long brandId;
+    private Long categoryId; 
+    private Long brandId; 
+    private boolean active;
     
-    // Nhận nhiều ảnh cho gallery sản phẩm
     private List<MultipartFile> productImages;
+
+    private List<String> keepImageUrls;
     
-    // Nhận danh sách biến thể
     private List<ProductVariantRequest> variants;
 }

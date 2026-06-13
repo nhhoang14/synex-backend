@@ -14,6 +14,7 @@ import java.util.List;
 public class ContactMessageService {
 
     private final ContactMessageRepository contactMessageRepository;
+    private final LocalImageUploadService fileService;
 
     @Transactional
     public ContactMessage create(ContactMessageRequest request) {
@@ -40,12 +41,10 @@ public class ContactMessageService {
         message.setSubject(request.getSubject() == null ? null : request.getSubject().trim());
         message.setMessage(request.getMessage().trim());
 
-        // Xử lý file nếu có upload
         if (request.getImageFile() != null && !request.getImageFile().isEmpty()) {
-            // String uploadedUrl = fileService.upload(request.getImageFile());
-            // message.setImageUrl(uploadedUrl);
+            message.setImageUrl(fileService.upload(request.getImageFile()));
         }
-                message.setStatus("NEW");
+        message.setStatus("NEW");
 
         return contactMessageRepository.save(message);
     }

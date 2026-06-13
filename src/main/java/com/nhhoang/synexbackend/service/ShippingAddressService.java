@@ -27,7 +27,7 @@ public class ShippingAddressService {
     }
 
     @Transactional
-    public ShippingAddress addAddressForCurrentUser(ShippingAddress address) {
+    public ShippingAddress addAddress(ShippingAddress address) {
         User user = getCurrentUser();
         long currentAddressCount = shippingAddressRepository.countByUserId(user.getId());
         if (currentAddressCount >= MAX_ADDRESSES_PER_USER) {
@@ -37,14 +37,10 @@ public class ShippingAddressService {
         address.setUser(user);
         List<ShippingAddress> existingAddresses = shippingAddressRepository.findByUserId(user.getId());
 
-        // First address is always default. Otherwise only keep one default.
         if (existingAddresses.isEmpty()) {
             address.setDefault(true);
         } else if (address.isDefault()) {
-            existingAddresses.forEach(addr -> {
-                addr.setDefault(false);
-                shippingAddressRepository.save(addr);
-            });
+            resetDefaultAddress(user.getId());
         } else {
             address.setDefault(false);
         }
@@ -66,12 +62,8 @@ public class ShippingAddressService {
         address.setPhone(updatedAddress.getPhone());
         address.setAddress(updatedAddress.getAddress());
 
-        // If this address is set to default, unset the others.
         if (updatedAddress.isDefault() && !address.isDefault()) {
-            shippingAddressRepository.findByUserId(currentUser.getId()).forEach(addr -> {
-                addr.setDefault(false);
-                shippingAddressRepository.save(addr);
-            });
+            resetDefaultAddress(currentUser.getId());
         }
 
         if (!updatedAddress.isDefault() && address.isDefault()) {
@@ -106,11 +98,13 @@ public class ShippingAddressService {
         }
     }
 
+    @Transactional(readOnly = true)
     public List<ShippingAddress> getCurrentUserAddresses() {
         User currentUser = getCurrentUser();
         return shippingAddressRepository.findByUserId(currentUser.getId());
     }
 
+    @Transactional(readOnly = true)
     public ShippingAddress getCurrentUserAddress(Long addressId) {
         User currentUser = getCurrentUser();
         ShippingAddress address = shippingAddressRepository.findById(addressId)
@@ -133,51 +127,17 @@ public class ShippingAddressService {
             throw new RuntimeException("Unauthorized");
         }
 
-        // Unset other default addresses
-        shippingAddressRepository.findByUserId(currentUser.getId()).forEach(addr -> {
+        resetDefaultAddress(currentUser.getId());
+        address.setDefault(true);
+        
+        return shippingAddressRepository.save(address);
+    }
+
+    @Transactional
+    public void resetDefaultAddress(Long userId) {
+        shippingAddressRepository.findByUserId(userId).forEach(addr -> {
             addr.setDefault(false);
             shippingAddressRepository.save(addr);
         });
-
-        address.setDefault(true);
-        return shippingAddressRepository.save(address);
-    }
-
-    // Deprecated methods (kept for backward compatibility if needed)
-    @Transactional
-    public ShippingAddress addAddress(Long userId, ShippingAddress address) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
-        long currentAddressCount = shippingAddressRepository.countByUserId(userId);
-        if (currentAddressCount >= MAX_ADDRESSES_PER_USER) {
-            throw new IllegalArgumentException("Each account can only have up to 3 shipping addresses");
-        }
-
-        address.setUser(user);
-        List<ShippingAddress> existingAddresses = shippingAddressRepository.findByUserId(userId);
-        if (existingAddresses.isEmpty()) {
-            address.setDefault(true);
-        } else if (address.isDefault()) {
-            existingAddresses.forEach(addr -> {
-                addr.setDefault(false);
-                shippingAddressRepository.save(addr);
-            });
-        } else {
-            address.setDefault(false);
-        }
-        return shippingAddressRepository.save(address);
-    }
-
-    public List<ShippingAddress> getUserAddresses(Long userId) {
-        return shippingAddressRepository.findByUserId(userId);
-    }
-
-    public ShippingAddress getAddress(Long userId, Long addressId) {
-        ShippingAddress address = shippingAddressRepository.findById(addressId)
-                .orElseThrow(() -> new RuntimeException("Address not found"));
-        if (!address.getUser().getId().equals(userId)) {
-            throw new RuntimeException("Unauthorized");
-        }
-        return address;
     }
 }

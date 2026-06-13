@@ -10,6 +10,6 @@ public class ContactMessageRequest {
     private String phone;
     private String subject;
     private String message;
-    private MultipartFile imageFile; // Dùng để nhận ảnh đính kèm từ form liên hệ
+    private MultipartFile imageFile;
     private String imageUrl;
 }

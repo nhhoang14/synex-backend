@@ -61,6 +61,31 @@ public class LocalImageUploadService {
         }
     }
 
+    public void delete(String imageUrl) {
+        if (imageUrl == null || imageUrl.isBlank()) {
+            return;
+        }
+
+        try {
+            String prefix = normalizePrefix(uploadUrlPrefix) + "/";
+            
+            if (imageUrl.contains(prefix)) {
+                String fileName = imageUrl.substring(imageUrl.indexOf(prefix) + prefix.length());
+                
+                Path filePath = this.rootLocation.resolve(fileName).normalize();
+                
+                boolean deleted = Files.deleteIfExists(filePath);
+                if (deleted) {
+                    System.out.println("Successfully deleted orphaned file: " + fileName);
+                } else {
+                    System.out.println("File not found on disk, skipped deletion: " + fileName);
+                }
+            }
+        } catch (IOException ex) {
+            System.err.println("Failed to delete old image file from disk: " + imageUrl + " -> " + ex.getMessage());
+        }
+    }
+
     private String extractExtension(String fileName) {
         if (fileName == null || fileName.isBlank()) {
             return "";

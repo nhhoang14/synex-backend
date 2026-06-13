@@ -1,10 +1,12 @@
 package com.nhhoang.synexbackend.controller.admin;
 
-import com.nhhoang.synexbackend.entity.Product;
+import com.nhhoang.synexbackend.dto.request.ProductRequest;
 import com.nhhoang.synexbackend.service.ProductService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.http.MediaType;
+import com.nhhoang.synexbackend.entity.Product;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -16,16 +18,16 @@ public class AdminProductController {
 
     private final ProductService productService;
     
-    @PostMapping
-    public ResponseEntity<Product> create(@RequestBody Product product) {
+    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<Product> create(@ModelAttribute ProductRequest product) {
         return ResponseEntity.status(201)
                 .body(productService.createProduct(product));
     }
 
-    @PutMapping("/{id}")
+    @PutMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<Product> update(@PathVariable Long id,
-                                          @RequestBody Product product) {
-        return ResponseEntity.ok(productService.updateProduct(id, product));
+                                          @ModelAttribute ProductRequest request) {
+        return ResponseEntity.ok(productService.updateProduct(id, request));
     }
 
     @DeleteMapping("/{id}")

@@ -18,19 +18,26 @@ public class Order {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private double totalAmount;
     private String orderCode;
+
+    private double subtotalAmount;
+    private double shippingFee;
+    private double discountAmount;
+    private double totalAmount;
+    
     private String status;
     private String paymentMethod;
 
-    // Shipping details
     private String shippingFullName;
     private String shippingPhone;
-
     private String shippingAddress;
     private String shippingNotes;
 
     private LocalDateTime createdAt;
+
+    @ManyToOne
+    @JoinColumn(name = "voucher_id")
+    private Voucher voucher;
 
     @ManyToOne
     @JoinColumn(name = "user_id")

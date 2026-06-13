@@ -6,6 +6,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.List;
 import java.time.LocalDateTime;
 
 @Entity
@@ -27,7 +28,6 @@ public class Voucher {
 
     // Supported values: PERCENT, FIXED
     private String discountType;
-
     private double discountValue;
     private double minOrderAmount;
     private Double maxDiscountAmount;

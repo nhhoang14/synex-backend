@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -22,6 +23,7 @@ public class Product {
     private String description;
 
     private boolean active = true;
+    private LocalDateTime createdAt;
 
     @ManyToOne
     @JoinColumn(name = "category_id")
@@ -39,4 +41,8 @@ public class Product {
     @JsonManagedReference
     private List<ProductVariant> variants = new ArrayList<>();
 
+    @PrePersist
+    public void prePersist() {
+        createdAt = LocalDateTime.now();
+    }
 }

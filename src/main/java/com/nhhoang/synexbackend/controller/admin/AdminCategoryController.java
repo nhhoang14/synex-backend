@@ -41,13 +41,23 @@ public class AdminCategoryController {
                 .orElseThrow(() -> new RuntimeException("Category not found"));
         existing.setName(request.getName());
         if (request.getImageFile() != null && !request.getImageFile().isEmpty()) {
+            if (existing.getImageUrl() != null && !existing.getImageUrl().isBlank()) {
+                fileService.delete(existing.getImageUrl());
+            }
             existing.setImageUrl(fileService.upload(request.getImageFile()));
+        } else if (request.getImageUrl() != null && !request.getImageUrl().isBlank()) {
+            existing.setImageUrl(request.getImageUrl()); 
         }
         return ResponseEntity.ok(categoryRepository.save(existing));
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
+        Category category = categoryRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Category not found"));
+        if (category.getImageUrl() != null && !category.getImageUrl().isBlank()) {
+            fileService.delete(category.getImageUrl());
+        }
         categoryRepository.deleteById(id);
         return ResponseEntity.noContent().build();
     }

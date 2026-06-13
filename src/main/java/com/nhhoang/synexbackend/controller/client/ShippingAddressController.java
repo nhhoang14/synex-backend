@@ -23,7 +23,7 @@ public class ShippingAddressController {
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<ShippingAddress> addAddress(@RequestBody ShippingAddressRequest request) {
         ShippingAddress address = toEntity(request);
-        ShippingAddress savedAddress = shippingAddressService.addAddressForCurrentUser(address);
+        ShippingAddress savedAddress = shippingAddressService.addAddress(address);
         return ResponseEntity.status(HttpStatus.CREATED).body(savedAddress);
     }
 

@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -24,9 +25,9 @@ public class ProductVariant {
 
     private double price;
     private int stockQuantity;
+    private int soldQuantity;
+    private LocalDateTime createdAt;
     private boolean active = true;
-
-    @Column
     private String imageUrl;
 
     @ManyToOne
@@ -37,4 +38,9 @@ public class ProductVariant {
     @OneToMany(mappedBy = "variant", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonManagedReference
     private List<ProductVariantAttribute> attributes = new ArrayList<>();
+
+    @PrePersist
+    public void prePersist() {
+        createdAt = LocalDateTime.now();
+    }
 }
